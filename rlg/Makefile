@@ -16,6 +16,6 @@ character_util: character_util.c
 	gcc character_util.c -ggdb -Wall -Werror -c -Ofast
 
 clean: 
-	rm -f dungeon5_0 heap.o pathfinding.o character.o *~ 
+	rm -f dungeon5_0 heap.o pathfinding.o character.o character_util.o *~ 
 
 
