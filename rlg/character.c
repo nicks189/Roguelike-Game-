@@ -8,7 +8,6 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
   if(loaded == 1) {
     d->player.x = pc_loc[dim_x];
     d->player.y = pc_loc[dim_y]; 
-    d->player.prev = mappair(pc_loc);
     d->player.curroom = 0;
   }
   else {
@@ -17,10 +16,8 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
                                d->rooms[0].length - 1 + d->rooms[0].x);
     d->player.y = rand_range(d->rooms[0].y + 1, 
                                d->rooms[0].height - 1 + d->rooms[0].y);
-    d->player.prev = mapxy(d->player.x, d->player.y);
   }
 
-  mapxy(d->player.x, d->player.y) = character_pc;
   printf("PC is at (y, x): %d, %d\n", d->player.y, d->player.x);
 }
 
@@ -63,40 +60,28 @@ void move_pc(_dungeon *d) {
     temp[dim_x] = d->player.x - 1;
     temp[dim_y] = d->player.y;
     handle_killing(d, 0, 0, temp);
-    mapxy(d->player.x, d->player.y) = d->player.prev;
-    d->player.prev = mapxy(d->player.x - 1, d->player.y);
     d->player.x -= 1;
-    mapxy(d->player.x, d->player.y) = character_pc;
   }
   
   else if(d->player.x < pc_to[dim_x]) {
     temp[dim_x] = d->player.x + 1;
     temp[dim_y] = d->player.y;
     handle_killing(d, 0, 0, temp);
-    mapxy(d->player.x, d->player.y) = d->player.prev;
-    d->player.prev = mapxy(d->player.x + 1, d->player.y);
     d->player.x += 1;
-    mapxy(d->player.x, d->player.y) = character_pc;
   }
 
   else if(d->player.y > pc_to[dim_y]) { 
     temp[dim_x] = d->player.x;
     temp[dim_y] = d->player.y - 1;
     handle_killing(d, 0, 0, temp);
-    mapxy(d->player.x, d->player.y) = d->player.prev;
-    d->player.prev = mapxy(d->player.x, d->player.y - 1);
     d->player.y -= 1;
-    mapxy(d->player.x, d->player.y) = character_pc;
   }
 
   else if(d->player.y < pc_to[dim_y]) {
     temp[dim_x] = d->player.x;
     temp[dim_y] = d->player.y + 1;
     handle_killing(d, 0, 0, temp);
-    mapxy(d->player.x, d->player.y) = d->player.prev;
-    d->player.prev = mapxy(d->player.x, d->player.y + 1);
     d->player.y += 1;
-    mapxy(d->player.x, d->player.y) = character_pc;
   } 
 
   else {
@@ -149,21 +134,17 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
       }
 
       if(hardnesspair(best) == 0) {
-        mapxy(mon->x, mon->y) = mon->prev;
         
         if(mappair(best) == ter_wall) {
-          mon->prev = ter_floor_hall;
+          mappair(best) = ter_floor_hall;
           pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
           pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
         }
 
-        else {
-          mon->prev = mappair(best);
-        }
-
+        char_gridxy(mon->x, mon->y) = NULL;
         mon->x = best[dim_x];
         mon->y = best[dim_y]; 
-        mappair(best) = mon->type; 
+        char_gridpair(best) = mon;
       } 
     } 
     
@@ -174,11 +155,10 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         return 1;
       }
 
-      mapxy(mon->x, mon->y) = mon->prev; 
-      mon->prev = mappair(best);
+      char_gridxy(mon->x, mon->y) = NULL;
       mon->x = best[dim_x];
       mon->y = best[dim_y]; 
-      mappair(best) = mon->type; 
+      char_gridpair(best) = mon;
     }
 
     check_cur_room(d, mon, NPC_MODE);
@@ -223,21 +203,17 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          mapxy(mon->x, mon->y) = mon->prev;
-          
+
           if(mappair(best) == ter_wall) {
-            mon->prev = ter_floor_hall;
+            mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
             pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
           }
 
-          else {
-            mon->prev = mappair(best);
-          }
-
+          char_gridxy(mon->x, mon->y) = NULL;
           mon->x = best[dim_x];
           mon->y = best[dim_y]; 
-          mappair(best) = mon->type; 
+          char_gridpair(best) = mon;
         }  
       }
 
@@ -254,16 +230,14 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           }
         } 
 
-        mapxy(mon->x, mon->y) = mon->prev; 
-
         if(handle_killing(d, mon->x, mon->y, best) == 1) {
           return 1;
         }
 
-        mon->prev = mappair(best);
+        char_gridxy(mon->x, mon->y) = NULL;
         mon->x = best[dim_x];
         mon->y = best[dim_y]; 
-        mappair(best) = mon->type; 
+        char_gridpair(best) = mon;
       }
     }
 
@@ -347,17 +321,15 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           search_for_pc(d, mon, best);
         }
 
-        mapxy(mon->x, mon->y) = mon->prev; 
-
         if(handle_killing(d, mon->x, mon->y, best) == 1) {
           return 1;
         }
 
         check_cur_room(d, mon, NPC_MODE);
-        mon->prev = mappair(best);
+        char_gridxy(mon->x, mon->y) = NULL;
         mon->x = best[dim_x];
         mon->y = best[dim_y]; 
-        mappair(best) = mon->type; 
+        char_gridpair(best) = mon;
       }
 
       /* Smart Non-Telepathic Tunneling monsters */
@@ -447,22 +419,18 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          mapxy(mon->x, mon->y) = mon->prev;
           
           if(mappair(best) == ter_wall) {
-            mon->prev = ter_floor_hall;
+            mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
             pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
           }
 
-          else {
-            mon->prev = mappair(best);
-          }
-
           check_cur_room(d, mon, NPC_MODE);
+          char_gridxy(mon->x, mon->y) = NULL;
           mon->x = best[dim_x];
           mon->y = best[dim_y]; 
-          mappair(best) = mon->type; 
+          char_gridpair(best) = mon;
         }  
       }
     }
@@ -536,21 +504,17 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          mapxy(mon->x, mon->y) = mon->prev;
           
           if(mappair(best) == ter_wall) {
-            mon->prev = ter_floor_hall;
+            mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
             pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
           }
 
-          else {
-            mon->prev = mappair(best);
-          }
-
+          char_gridxy(mon->x, mon->y) = NULL;
           mon->x = best[dim_x];
           mon->y = best[dim_y]; 
-          mappair(best) = mon->type; 
+          char_gridpair(best) = mon;
         }
       }
 
@@ -602,16 +566,14 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           best[dim_x] = mon->x;
         }
 
-        mapxy(mon->x, mon->y) = mon->prev; 
-
         if(handle_killing(d, mon->x, mon->y, best) == 1) {
          return 1;
         } 
 
-        mon->prev = mappair(best);
+        char_gridxy(mon->x, mon->y) = NULL;
         mon->x = best[dim_x];
         mon->y = best[dim_y]; 
-        mappair(best) = mon->type; 
+        char_gridpair(best) = mon; 
       }
     }
 
@@ -689,22 +651,18 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          mapxy(mon->x, mon->y) = mon->prev;
           
           if(mappair(best) == ter_wall) {
-            mon->prev = ter_floor_hall;
+            mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
             pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
           }
 
-          else {
-            mon->prev = mappair(best);
-          }
-
           check_cur_room(d, mon, NPC_MODE);
+          char_gridxy(mon->x, mon->y) = NULL;
           mon->x = best[dim_x];
           mon->y = best[dim_y]; 
-          mappair(best) = mon->type; 
+          char_gridpair(best) = mon; 
         }
       }
 
@@ -764,17 +722,15 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           search_for_pc(d, mon, best);
         }
 
-        mapxy(mon->x, mon->y) = mon->prev; 
-
         if(handle_killing(d, mon->x, mon->y, best) == 1) {
           return 1;
         } 
 
         check_cur_room(d, mon, NPC_MODE);
-        mon->prev = mappair(best);
+        char_gridxy(mon->x, mon->y) = NULL;
         mon->x = best[dim_x];
         mon->y = best[dim_y]; 
-        mappair(best) = mon->type; 
+        char_gridpair(best) = mon;
       }
     }
   }
@@ -805,5 +761,6 @@ void init_monsters(_dungeon *d) {
   
     } while(add_mon(d, &tmp));
     d->npc_arr[i] = tmp;
+    init_char_array(d);
   }
 }

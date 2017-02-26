@@ -316,74 +316,33 @@ void print(_dungeon *d) {
   uint8_t x, y;
   for(y = 0; y < DUNGEON_Y; y++) {
     for(x = 0; x < DUNGEON_X; x++) {
-      switch(mapxy(x ,y)) {
-        case ter_wall:
-        case ter_wall_immutable:
-          putchar(' ');
-          break;
-        case ter_floor:
-        case ter_floor_room:
-          putchar('.');
-          break;
-        case ter_floor_hall:
-          putchar('#');
-          break;
-        case character_pc:
-          putchar('@');
-          break;
-        case endgame_flag:
-          putchar('X');
-          break;
-      /* will change this with next assignment */
-        case npc_0:
-          putchar('0');
-          break;
-        case npc_1:
-          putchar('1');
-          break;
-        case npc_2:
-          putchar('2');
-          break;
-        case npc_3:
-          putchar('3');
-          break;
-        case npc_4: 
-          putchar('4');
-          break;
-        case npc_5:
-          putchar('5');
-          break;
-        case npc_6:
-          putchar('6');
-          break;
-        case npc_7:
-          putchar('7');
-          break;
-        case npc_8:
-          putchar('8');
-          break;
-        case npc_9:
-          putchar('9');
-          break;
-        case npc_a: 
-          putchar('a');
-          break;
-        case npc_b:
-          putchar('b');
-          break;
-        case npc_c:
-          putchar('c');
-          break;
-        case npc_d:
-          putchar('d');
-          break;
-        case npc_e:
-          putchar('e');
-          break;
-        case npc_f:
-          putchar('f');
-          break;
-      } 
+
+      if(x == d->player.x && y == d->player.y) {
+        putchar('@');
+      }
+
+      else if(char_gridxy(x, y) != NULL && mapxy(x, y) != ter_wall_immutable) {
+        printf("%c", char_gridxy(x, y)->type); 
+      }
+
+      else {
+        switch(mapxy(x ,y)) {
+          case ter_wall:
+          case ter_wall_immutable:
+            putchar(' ');
+            break;
+          case ter_floor:
+          case ter_floor_room:
+            putchar('.');
+            break;
+          case ter_floor_hall:
+            putchar('#');
+            break;
+         case endgame_flag:
+            putchar('X');
+            break;
+        } 
+      }
     }
     putchar('\n');
   }
@@ -555,7 +514,7 @@ uint8_t update_dungeon(_dungeon *d) {
       cur_node->time += (1000 / cur_node->u.pc->speed);
       move_pc(d);
       heap_insert(&h, cur_node);
-      usleep(93333);
+      usleep(73333);
     }
 
     else {
@@ -606,7 +565,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
     place_pc(d, pc_loaded, pc_loc);
     pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
     pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
-    init_monsters(d);
+  init_monsters(d);
     move_pc(d);
     print(d); 
     print_maps(d, 0);

@@ -10,6 +10,7 @@
 #define PC_MODE 0
 #define NPC_MODE 1
 
+void init_char_array(_dungeon *d);
 uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp);
 uint8_t add_mon(_dungeon *d, _npc *mon);
 int32_t event_cmp(const void *key, const void *with);
