@@ -514,7 +514,7 @@ uint8_t update_dungeon(_dungeon *d) {
       cur_node->time += (1000 / cur_node->u.pc->speed);
       move_pc(d);
       heap_insert(&h, cur_node);
-      usleep(93333);
+      usleep(73333);
     }
 
     else {
