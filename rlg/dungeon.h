@@ -34,6 +34,8 @@
 #define ntunnelpair(pair) (d->non_tunnel_map[pair[dim_y]][pair[dim_x]])
 #define searchmapxy(x, y) (mon->search_map[y][x])
 #define searchmappair(pair) (mon->search_map[pair[dim_y]][pair[dim_x]])
+#define char_gridxy(x, y) (d->char_grid[y][x])
+#define char_gridpair(pair) (d->char_grid[pair[dim_y]][pair[dim_x]])
 
 
 /* --from Dr Sheaffer-- */ 
@@ -60,24 +62,7 @@ typedef enum __attribute__ ((__packed__)) terrain_type {
   ter_floor,
   ter_floor_room,
   ter_floor_hall,
-  endgame_flag,
-  character_pc,
-  npc_0,  
-  npc_1,
-  npc_2,
-  npc_3,
-  npc_4,
-  npc_5,
-  npc_6,
-  npc_7,
-  npc_8,
-  npc_9,
-  npc_a,
-  npc_b,
-  npc_c,
-  npc_d,
-  npc_e,
-  npc_f
+  endgame_flag
 } _terrain_type;
 
 enum event_type {
@@ -87,15 +72,13 @@ enum event_type {
 
 typedef struct pc {
   uint8_t x, y, speed;
-  _terrain_type prev;
   uint8_t curroom;
 } _pc;
 
 typedef struct npc {
   uint8_t x, y, dead, curroom, pc_los, searching, speed;
   uint32_t trait; 
-  _terrain_type type;
-  _terrain_type prev;
+  char type;
   pair_t pc_lsp;
   corridor_path_t search_map[DUNGEON_Y][DUNGEON_X];
   pair_t search_to;
@@ -121,6 +104,7 @@ typedef struct dungeon {
   _room *rooms;
   uint32_t nummon;
   _terrain_type map[DUNGEON_Y][DUNGEON_X];
+  _npc *char_grid[DUNGEON_Y][DUNGEON_X];
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   corridor_path_t tunnel_map[DUNGEON_Y][DUNGEON_X];
   corridor_path_t non_tunnel_map[DUNGEON_Y][DUNGEON_X];
