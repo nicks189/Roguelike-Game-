@@ -32,9 +32,7 @@ void unmount_ncurses(void) {
 
 int end_game(int mode, _dungeon *d) {
   char *ret;
-  clear();
   delete_dungeon(d);
-
   if(mode == NPC_MODE) {
     ret = "\n\n\n\n\n\n\n\n\n                                                 "
         "                           GAME OVER :(                  \n\n\n\n\n\n\n\n\n";
@@ -45,8 +43,6 @@ int end_game(int mode, _dungeon *d) {
   }
 
   printw("%s", ret);
-  refresh();
-  unmount_ncurses();
   return 1;
 }
 
@@ -329,16 +325,13 @@ void connect_rooms(_dungeon *d) {
 
 /* --from Dr Sheaffer-- */
 void print(_dungeon *d) {
-  //clear();
   mvprintw(0, 0, "%ld\n", d->seed);
+  clear();
   uint8_t x, y, x_l, y_l, x_h, y_h;
-  uint8_t px, py;
-  px = 0;
-  py = 1;
 
   if(d->player.x >= 39) {
     if(d->player.x <= DUNGEON_X - 40) {
-      x_l = d->player.x - 40;  
+      x_l = d->player.x - 39;  
       x_h = d->player.x + 40;
     }
 
@@ -353,10 +346,10 @@ void print(_dungeon *d) {
     x_h = 80; 
   }
 
-  if(d->player.y >= 11) {
-    if(d->player.y <= DUNGEON_Y - 11) {
+  if(d->player.y >= 10) {
+    if(d->player.y <= DUNGEON_Y - 10) {
       y_l = d->player.y - 10;
-      y_h = d->player.y + 11;
+      y_h = d->player.y + 10;
     }
 
     else {
@@ -367,44 +360,43 @@ void print(_dungeon *d) {
 
   else {
     y_l = 0;
-    y_h = 22;
+    y_h = 21;
   }
   
   for(y = y_l; y < y_h; y++) {
-    px = 0;
     for(x = x_l; x < x_h; x++) {
 
       if(x == d->player.x && y == d->player.y) {
-        mvaddch(py, px, '@');
+        mvaddch(y + 1, x, '@');
       }
 
       else if(char_gridxy(x, y) != NULL && mapxy(x, y) != ter_wall_immutable) {
-        mvprintw(py, px, "%c", char_gridxy(x, y)->type); 
+        mvprintw(y + 1, x, "%c", char_gridxy(x, y)->type); 
       }
 
       else {
-        switch(mapxy(x, y)) {
+        switch(mapxy(x ,y)) {
           case ter_wall:
           case ter_wall_immutable:
-            mvaddch(py, px, ' ');
+            mvaddch(y + 1, x, '@');
             break;
           case ter_floor:
           case ter_floor_room:
-            mvaddch(py, px, '.');
+            mvaddch(y + 1, x, '@');
             break;
           case ter_floor_hall:
-            mvaddch(py, px, '#');
+            mvaddch(y + 1, x, '@');
             break;
          case endgame_flag:
-            mvaddch(py, px, 'X');
+            mvaddch(y + 1, x, '@');
             break;
         } 
       }
-      px++;
     }
-    py++;
     addch('\n');
   }
+  addch('\n');
+  addch('\n'); 
   refresh();
 }
 
@@ -506,6 +498,7 @@ void save_to_file(_dungeon *d, char* path) {
 void delete_dungeon(_dungeon *d) { 
   free(d->rooms);
   free(d->npc_arr);
+  endwin();
 }
 
 void init_dungeon(_dungeon *d, uint8_t load) {
@@ -522,7 +515,6 @@ void init_dungeon(_dungeon *d, uint8_t load) {
 
 /* refreshes dungeon and moves characters */
 uint8_t update_dungeon(_dungeon *d) {
-  int32_t nxtcmd;
   uint32_t i;
   uint8_t initialized = 0;
   event_t *cur_node, *peek_node, *temp_node, event_array[d->nummon + 1];
@@ -570,11 +562,11 @@ uint8_t update_dungeon(_dungeon *d) {
     }
 
     if(cur_node->type == pc_type) {
-      print(d);
-      nxtcmd = getch();
+      getch();
       cur_node->time += (1000 / cur_node->u.pc->speed);
-      move_pc(d, nxtcmd);
+      move_pc(d);
       heap_insert(&h, cur_node);
+      print(d);
     }
 
     else {
@@ -608,6 +600,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
     pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
     pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
     init_monsters(d);
+    move_pc(d);
     print(d);
     print_maps(d, 0);
   }
@@ -623,6 +616,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
     pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
     pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
     init_monsters(d);
+    move_pc(d);
     print(d); 
     print_maps(d, 0);
   }
@@ -702,7 +696,12 @@ int main(int argc, char *argv[]) {
     strcat(r_path, "dungeon");
   }
   
-  mount_ncurses();
+  initscr();
+  raw();
+  noecho();
+  curs_set(0);
+  keypad(stdscr, true);
+
   create_dungeon(&d, _load, _save, r_path, s_path, pc_loaded, pc_loc);
   return update_dungeon(&d);
   delete_dungeon(&d);

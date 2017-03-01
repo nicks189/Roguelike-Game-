@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
+#include <ncurses.h>
 
 #include "heap.h"
 

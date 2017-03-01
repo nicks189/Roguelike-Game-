@@ -61,7 +61,7 @@ uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp) {
   }
   
   else if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
-      || temp[dim_y] != y_i)) {
+        || temp[dim_y] != y_i)) {
     char_gridpair(temp)->dead = 1; 
     char_gridpair(temp) = NULL;
   }

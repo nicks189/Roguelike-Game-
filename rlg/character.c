@@ -22,7 +22,7 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
 }
 
 /* really bad temp */
-void move_pc(_dungeon *d) {
+void move_pc(_dungeon *d, int32_t move) {
   static pair_t pc_to; 
   static int pc_init = 0;
   pair_t temp;
