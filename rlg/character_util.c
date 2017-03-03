@@ -1,6 +1,16 @@
 #include "character_util.h"
 #include "pathfinding.h"
 
+int mv_up_stairs(_dungeon *d) {
+
+  return 1;
+}
+
+int mv_dwn_stairs(_dungeon *d) {
+  
+  return 1;
+}
+
 int32_t event_cmp(const void *key, const void *with) {
   return ((event_t *) key)->time - ((event_t *) with)->time;
 }
@@ -53,17 +63,29 @@ void init_char_array(_dungeon *d) {
   } 
 }
 
-uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp) {
+uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp, uint8_t mode) {
 
-  if(temp[dim_x] == d->player.x && temp[dim_y] == d->player.y)  {
-    mappair(temp) = endgame_flag; 
-    return 1;
+  if(mode == NPC_MODE) {
+    if(temp[dim_x] == d->player.x && temp[dim_y] == d->player.y)  {
+      mappair(temp) = endgame_flag; 
+      return 1;
+    }
+    
+    else if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
+          || temp[dim_y] != y_i)) {
+      char_gridpair(temp)->x = char_gridpair(temp)->prev[dim_x]; 
+      char_gridpair(temp)->y = char_gridpair(temp)->prev[dim_y];
+      char_gridxy(char_gridpair(temp)->x, char_gridpair(temp)->y) = char_gridpair(temp);
+      char_gridpair(temp) = NULL;
+    }
   }
-  
-  else if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
-        || temp[dim_y] != y_i)) {
-    char_gridpair(temp)->dead = 1; 
-    char_gridpair(temp) = NULL;
+
+  else {
+    if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
+          || temp[dim_y] != y_i)) {
+      char_gridpair(temp)->dead = 1; 
+      char_gridpair(temp) = NULL;
+    }
   }
 
   return 0;
@@ -149,7 +171,7 @@ void check_cur_room(_dungeon *d, _npc *m, uint8_t mode) {
       return;
     }
 
-    if(d->player.curroom == 255) {
+    else if(d->player.curroom == 255) {
       for (i = 0; i < d->num_rooms; i++) {
         if ((d->player.x >= d->rooms[i].x) &&
             (d->player.x < (d->rooms[i].x + d->rooms[i].length)) &&
@@ -159,6 +181,7 @@ void check_cur_room(_dungeon *d, _npc *m, uint8_t mode) {
           return;
         }
       }
+      return;
     }
   }
 

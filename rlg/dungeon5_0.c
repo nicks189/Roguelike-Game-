@@ -24,29 +24,38 @@ void mount_ncurses(void) {
   noecho();
   curs_set(0);
   keypad(stdscr, true);
+  start_color();
+  init_pair(1, COLOR_RED,     COLOR_BLACK);
+  init_pair(2, COLOR_GREEN,   COLOR_BLACK);
+  init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
+  init_pair(4, COLOR_BLUE,    COLOR_BLACK);
+  init_pair(5, COLOR_CYAN,    COLOR_BLACK);
+  init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(7, COLOR_WHITE,   COLOR_BLACK);
 }
 
 void unmount_ncurses(void) {
   endwin();
 }
 
-int end_game(int mode, _dungeon *d) {
-  char *ret;
+int end_game(_dungeon *d, int mode) {
   clear();
   delete_dungeon(d);
 
   if(mode == NPC_MODE) {
-    ret = "\n\n\n\n\n\n\n\n\n                                                 "
-        "                           GAME OVER :(                  \n\n\n\n\n\n\n\n\n";
+    mvprintw(11, 30, "GAME OVER :(");
+  }
+  else if(mode == PC_MODE) {
+    mvprintw(11, 30, "YOU WIN!");
   }
   else {
-    ret  = "\n\n\n\n\n\n\n\n\n                                                 "
-        "                           YOU WIN!                  \n\n\n\n\n\n\n\n\n\n";
+    mvprintw(11, 35, "QUIT");
   }
 
-  printw("%s", ret);
+  getch();
   refresh();
   unmount_ncurses();
+  exit(0);
   return 1;
 }
 
@@ -329,57 +338,71 @@ void connect_rooms(_dungeon *d) {
 
 /* --from Dr Sheaffer-- */
 void print(_dungeon *d) {
-  //clear();
-  mvprintw(0, 0, "%ld\n", d->seed);
+  clear();
+
+  mvprintw(0, 0, "%ld", d->seed);
   uint8_t x, y, x_l, y_l, x_h, y_h;
   uint8_t px, py;
   px = 0;
   py = 1;
 
-  if(d->player.x >= 39) {
-    if(d->player.x <= DUNGEON_X - 40) {
-      x_l = d->player.x - 40;  
-      x_h = d->player.x + 40;
-    }
-
-    else {
-      x_h = DUNGEON_X;
-      x_l = 80;
-    }
+  if(d->view_mode == LOOK_MODE) {
+    x_l = d->lcoords[dim_x] - 39;
+    x_h = d->lcoords[dim_x] + 41;
+    y_l = d->lcoords[dim_y] - 9;
+    y_h = d->lcoords[dim_y] + 12;
   }
 
   else {
-    x_l = 0;
-    x_h = 80; 
-  }
+    if(d->player.x >= 39) {
+      if(d->player.x <= DUNGEON_X - 41) {
+        x_l = d->player.x - 39;  
+        x_h = d->player.x + 41;
+      }
 
-  if(d->player.y >= 11) {
-    if(d->player.y <= DUNGEON_Y - 11) {
-      y_l = d->player.y - 10;
-      y_h = d->player.y + 11;
+      else {
+        x_h = DUNGEON_X;
+        x_l = 80;
+      }
     }
 
     else {
-      y_h = DUNGEON_Y;
-      y_l = 95;
+      x_l = 0;
+      x_h = 80; 
+    }
+
+    if(d->player.y >= 9) {
+      if(d->player.y <= DUNGEON_Y - 12) {
+        y_l = d->player.y - 9;
+        y_h = d->player.y + 12;
+      }
+
+      else {
+        y_h = DUNGEON_Y;
+        y_l = 84;
+      }
+    }
+
+    else {
+      y_l = 0;
+      y_h = 22;
     }
   }
 
-  else {
-    y_l = 0;
-    y_h = 22;
-  }
+  mvprintw(0, 30, "viewing: (%d to %d) and (%d to %d)", x_l, x_h, y_l, y_h);
   
   for(y = y_l; y < y_h; y++) {
     px = 0;
     for(x = x_l; x < x_h; x++) {
 
       if(x == d->player.x && y == d->player.y) {
-        mvaddch(py, px, '@');
+        mvaddch(py, px, '@' | COLOR_PAIR(3));
       }
 
       else if(char_gridxy(x, y) != NULL && mapxy(x, y) != ter_wall_immutable) {
-        mvprintw(py, px, "%c", char_gridxy(x, y)->type); 
+        attron(COLOR_PAIR(2));
+        mvprintw(py, px, "%c", (char_gridxy(x, y)->type)); 
+        attroff(COLOR_PAIR(2));
       }
 
       else {
@@ -393,7 +416,7 @@ void print(_dungeon *d) {
             mvaddch(py, px, '.');
             break;
           case ter_floor_hall:
-            mvaddch(py, px, '#');
+            mvaddch(py, px, '#' | COLOR_PAIR(7));
             break;
          case endgame_flag:
             mvaddch(py, px, 'X');
@@ -509,6 +532,7 @@ void delete_dungeon(_dungeon *d) {
 }
 
 void init_dungeon(_dungeon *d, uint8_t load) {
+  d->view_mode = CONTROL_MODE;
   if(load) {
     uint8_t x, y;
     for(y = 0; y < DUNGEON_Y; y++) {
@@ -529,6 +553,9 @@ uint8_t update_dungeon(_dungeon *d) {
   heap_t h; 
 
   while(1) {
+
+    d->lcoords[dim_x] = d->player.x;
+    d->lcoords[dim_y] = d->player.y;
     if(!initialized) {
       heap_init(&h, event_cmp, NULL);
       event_array[0].time = 0;
@@ -547,14 +574,14 @@ uint8_t update_dungeon(_dungeon *d) {
       initialized = 1;
     }
 
-    if(h.size != 0) {
+    if(h.size != 1) {
       cur_node = heap_remove_min(&h); 
     }
 
     else {
       print(d);
       heap_delete(&h);
-      return end_game(PC_MODE, d); 
+      return end_game(d, PC_MODE); 
     }
 
     while((peek_node = heap_peek_min(&h))) {
@@ -564,16 +591,18 @@ uint8_t update_dungeon(_dungeon *d) {
         cur_node = temp_node;
       }  
       else {
-
         break;
       }
     }
 
     if(cur_node->type == pc_type) {
       print(d);
-      nxtcmd = getch();
       cur_node->time += (1000 / cur_node->u.pc->speed);
-      move_pc(d, nxtcmd);
+      while(move_pc(d, nxtcmd = getch())) {
+        if(d->view_mode == LOOK_MODE) {
+          print(d);
+        }
+      }
       heap_insert(&h, cur_node);
     }
 
@@ -582,7 +611,7 @@ uint8_t update_dungeon(_dungeon *d) {
         cur_node->time += (1000 / cur_node->u.npc->speed);
         if(move_npc(d, cur_node->u.npc)) {
           heap_delete(&h);
-          return end_game(NPC_MODE, d);    
+          return end_game(d, NPC_MODE);    
         }
         heap_insert(&h, cur_node);
       }

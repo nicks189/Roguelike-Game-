@@ -81,6 +81,7 @@ typedef struct npc {
   uint32_t trait; 
   char type;
   pair_t pc_lsp;
+  pair_t prev;
   corridor_path_t search_map[DUNGEON_Y][DUNGEON_X];
   pair_t search_to;
 } _npc;
@@ -100,10 +101,11 @@ typedef struct room {
 } _room;
 
 typedef struct dungeon {
-  uint32_t num_rooms;
+  uint8_t view_mode;
+  pair_t lcoords;
+  uint32_t num_rooms, nummon;
   long int seed; 
   _room *rooms;
-  uint32_t nummon;
   _terrain_type map[DUNGEON_Y][DUNGEON_X];
   _npc *char_grid[DUNGEON_Y][DUNGEON_X];
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
@@ -113,7 +115,7 @@ typedef struct dungeon {
   _npc *npc_arr;
 } _dungeon;
 
-int end_game(int mode, _dungeon *d);
+int end_game(_dungeon *d, int mode);
 int smooth_hardness(_dungeon *d);
 void empty_dungeon(_dungeon *d);
 int in_room(_dungeon *d, int16_t y, int16_t x);
