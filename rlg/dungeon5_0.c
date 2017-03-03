@@ -400,23 +400,23 @@ void print(_dungeon *d) {
       }
 
       else if(char_gridxy(x, y) != NULL && mapxy(x, y) != ter_wall_immutable) {
-        attron(COLOR_PAIR(2));
+        attron(COLOR_PAIR(5));
         mvprintw(py, px, "%c", (char_gridxy(x, y)->type)); 
-        attroff(COLOR_PAIR(2));
+        attroff(COLOR_PAIR(5));
       }
 
       else {
         switch(mapxy(x, y)) {
           case ter_wall:
           case ter_wall_immutable:
-            mvaddch(py, px, ' ');
+            mvaddch(py, px, '#' | COLOR_PAIR(7));
             break;
           case ter_floor:
           case ter_floor_room:
-            mvaddch(py, px, '.');
+            mvaddch(py, px, '.' | COLOR_PAIR(7));
             break;
           case ter_floor_hall:
-            mvaddch(py, px, '#' | COLOR_PAIR(7));
+            mvaddch(py, px, '.' | COLOR_PAIR(7));
             break;
          case endgame_flag:
             mvaddch(py, px, 'X');
@@ -639,6 +639,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
     init_monsters(d);
     print(d);
     print_maps(d, 0);
+    return update_dungeon(d);
   }
 
   else {
@@ -654,6 +655,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
     init_monsters(d);
     print(d); 
     print_maps(d, 0);
+    return update_dungeon(d);
   }
 
   if(save) {
@@ -733,7 +735,6 @@ int main(int argc, char *argv[]) {
   
   mount_ncurses();
   create_dungeon(&d, _load, _save, r_path, s_path, pc_loaded, pc_loc);
-  return update_dungeon(&d);
   delete_dungeon(&d);
   return 0;
 }
