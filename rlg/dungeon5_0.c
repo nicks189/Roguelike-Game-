@@ -38,6 +38,21 @@ void unmount_ncurses(void) {
   endwin();
 }
 
+int mv_up_stairs(_dungeon *d) {
+  if(mapxy(d->player.x, d->player.y) == ter_stairs_up) {
+    delete_dungeon(d);
+    create_dungeon(d, 0, 0, 0, 0, 0, 0);
+  }
+  return 1;
+}
+
+int mv_dwn_stairs(_dungeon *d) {
+  if(mapxy(d->player.x, d->player.y) == ter_stairs_down) {
+    delete_dungeon(d);
+    create_dungeon(d, 0, 0, 0, 0, 0, 0);
+  }
+  return 1;
+}
 int end_game(_dungeon *d, int mode) {
   clear();
   delete_dungeon(d);
@@ -265,7 +280,7 @@ void make_rooms(_dungeon *d) {
 
 /* fill rooms with "." */
 void fill_rooms(_dungeon *d) {
- for(uint32_t i = 0; i < d->num_rooms; i++) {
+  for(uint32_t i = 0; i < d->num_rooms; i++) {
     uint8_t y1 = d->rooms[i].y;
     uint8_t x1 = d->rooms[i].x;
     uint8_t y2 = d->rooms[i].y + d->rooms[i].height;
@@ -335,6 +350,24 @@ void connect_rooms(_dungeon *d) {
 
   create_cycle(d);  
 } 
+
+int place_stairs(_dungeon *d) {
+  int xd1, xd2, yd1, yd2, xu1, xu2, yu1, yu2; 
+  xd1 = rand_range(d->rooms[0].x + 1, d->rooms[0].length - 1 + d->rooms[0].x);
+  xd2 = rand_range(d->rooms[2].x + 1, d->rooms[2].length - 1 + d->rooms[2].x);
+  yd1 = rand_range(d->rooms[0].y + 1, d->rooms[0].height - 1 + d->rooms[0].y);
+  yd2 = rand_range(d->rooms[2].y + 1, d->rooms[2].height - 1 + d->rooms[2].y);
+  xu1 = rand_range(d->rooms[3].x + 1, d->rooms[3].length - 1 + d->rooms[3].x);
+  xu2 = rand_range(d->rooms[4].x + 1, d->rooms[4].length - 1 + d->rooms[4].x);
+  yu1 = rand_range(d->rooms[3].y + 1, d->rooms[3].height - 1 + d->rooms[3].y);
+  yu2 = rand_range(d->rooms[4].y + 1, d->rooms[4].height - 1 + d->rooms[4].y);
+
+  mapxy(xd1, yd1) = ter_stairs_down;
+  mapxy(xd2, yd2) = ter_stairs_down;
+  mapxy(xu1, yu1) = ter_stairs_up;
+  mapxy(xu2, yu2) = ter_stairs_up;
+  return 0;
+}
 
 /* --from Dr Sheaffer-- */
 void print(_dungeon *d) {
@@ -417,6 +450,12 @@ void print(_dungeon *d) {
             break;
           case ter_floor_hall:
             mvaddch(py, px, '.' | COLOR_PAIR(7));
+            break;
+         case ter_stairs_down: 
+            mvaddch(py, px, '>' | COLOR_PAIR(1));
+            break;
+         case ter_stairs_up:
+            mvaddch(py, px, '<' | COLOR_PAIR(1));
             break;
          case endgame_flag:
             mvaddch(py, px, 'X');
@@ -625,7 +664,6 @@ int create_dungeon(_dungeon *d, uint8_t load,
    uint8_t save, char *rpath, char* spath, uint8_t pc_loaded, pair_t pc_loc) {
     
   if(load) {
-
     init_dungeon(d, load);
     if(read_from_file(d, rpath)) {
       return 1;
@@ -633,6 +671,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
 
     fill_rooms(d);
     load_dungeon(d);
+    place_stairs(d);
     place_pc(d, pc_loaded, pc_loc);
     pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
     pathfinding(d, d->player.x, d->player.y, d->non_tunnel_map, NON_TUNNEL_MODE);
@@ -643,11 +682,11 @@ int create_dungeon(_dungeon *d, uint8_t load,
   }
 
   else {
-
     pc_loaded = 0;
     init_dungeon(d, load);
     make_rooms(d);
     fill_rooms(d);
+    place_stairs(d);
     connect_rooms(d);
     place_pc(d, pc_loaded, pc_loc);
     pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);

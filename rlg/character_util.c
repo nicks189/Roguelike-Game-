@@ -1,22 +1,11 @@
 #include "character_util.h"
 #include "pathfinding.h"
 
-int mv_up_stairs(_dungeon *d) {
-
-  return 1;
-}
-
-int mv_dwn_stairs(_dungeon *d) {
-  
-  return 1;
-}
-
 int32_t event_cmp(const void *key, const void *with) {
   return ((event_t *) key)->time - ((event_t *) with)->time;
 }
 
 uint8_t add_mon(_dungeon *d, _npc *mon) {
-
   if(mapxy(mon->x, mon->y) == ter_floor_room) {
     if(mon->trait == 15)
       mon->type = 'f';
@@ -64,7 +53,6 @@ void init_char_array(_dungeon *d) {
 }
 
 uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp, uint8_t mode) {
-
   if(mode == NPC_MODE) {
     if(temp[dim_x] == d->player.x && temp[dim_y] == d->player.y)  {
       mappair(temp) = endgame_flag; 

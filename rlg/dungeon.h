@@ -63,6 +63,8 @@ typedef enum __attribute__ ((__packed__)) terrain_type {
   ter_floor,
   ter_floor_room,
   ter_floor_hall,
+  ter_stairs_up,
+  ter_stairs_down,
   endgame_flag
 } _terrain_type;
 
@@ -115,6 +117,9 @@ typedef struct dungeon {
   _npc *npc_arr;
 } _dungeon;
 
+
+int mv_up_stairs(_dungeon *d);
+int mv_dwn_stairs(_dungeon *d);
 int end_game(_dungeon *d, int mode);
 int smooth_hardness(_dungeon *d);
 void empty_dungeon(_dungeon *d);

@@ -22,7 +22,6 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
 }
 
 int move_pc(_dungeon *d, int32_t move) {
-
   pair_t next; 
   if(move == MV_UP_LEFT_1 || move == MV_UP_LEFT_2) {
     next[dim_x] = d->player.x - 1;
@@ -158,12 +157,9 @@ int move_pc(_dungeon *d, int32_t move) {
 
 }
 
-
-
 /* Here there be monsters (as in really crappy code) 
  * You've been warned... */
 uint8_t move_npc(_dungeon *d, _npc *mon) {
-
   uint8_t x_l, x_h, y_l, y_h, x, y;
   x_l = mon->x - 1;
   x_h = mon->x + 1;
