@@ -7,14 +7,14 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
 
   if(loaded == 1) {
     d->player.x = pc_loc[dim_x];
-    d->player.y = pc_loc[dim_y]; 
+    d->player.y = pc_loc[dim_y];
     d->player.curroom = 0;
   }
   else {
     d->player.curroom = 0;
-    d->player.x = rand_range(d->rooms[0].x + 1, 
+    d->player.x = rand_range(d->rooms[0].x + 1,
                                d->rooms[0].length - 1 + d->rooms[0].x);
-    d->player.y = rand_range(d->rooms[0].y + 1, 
+    d->player.y = rand_range(d->rooms[0].y + 1,
                                d->rooms[0].height - 1 + d->rooms[0].y);
   }
 
@@ -22,91 +22,91 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
 }
 
 int move_pc(_dungeon *d, int32_t move) {
-  pair_t next; 
+  pair_t next;
   if(move == MV_UP_LEFT_1 || move == MV_UP_LEFT_2) {
     next[dim_x] = d->player.x - 1;
-    next[dim_y] = d->player.y - 1; 
-  } 
+    next[dim_y] = d->player.y - 1;
+  }
 
   else if(move == MV_UP_1 || move == MV_UP_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = d->player.x;
-      next[dim_y] = d->player.y - 1; 
+      next[dim_y] = d->player.y - 1;
     }
 
     else {
-      d->lcoords[dim_y] = (d->lcoords[dim_y] >= 19 ? 
+      d->lcoords[dim_y] = (d->lcoords[dim_y] >= 19 ?
           d->lcoords[dim_y] - 10 : 9);
       return 1;
     }
-  } 
+  }
 
   else if(move == MV_UP_RIGHT_1 || move == MV_UP_RIGHT_2) {
     next[dim_x] = d->player.x + 1;
-    next[dim_y] = d->player.y - 1; 
-  } 
+    next[dim_y] = d->player.y - 1;
+  }
 
   else if(move == MV_RIGHT_1 || move == MV_RIGHT_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = d->player.x + 1;
-      next[dim_y] = d->player.y; 
+      next[dim_y] = d->player.y;
     }
 
     else {
-      d->lcoords[dim_x] = (d->lcoords[dim_x] <= 99 ? 
+      d->lcoords[dim_x] = (d->lcoords[dim_x] <= 99 ?
           d->lcoords[dim_x] + 20: 119);
       return 1;
     }
-  } 
+  }
 
   else if(move == MV_DWN_RIGHT_1 || move == MV_DWN_RIGHT_2) {
     next[dim_x] = d->player.x + 1;
-    next[dim_y] = d->player.y + 1; 
-  } 
+    next[dim_y] = d->player.y + 1;
+  }
 
   else if(move == MV_DWN_1 || move == MV_DWN_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = d->player.x;
-      next[dim_y] = d->player.y + 1; 
+      next[dim_y] = d->player.y + 1;
     }
 
     else {
-      d->lcoords[dim_y] = (d->lcoords[dim_y] <= 83 ? 
+      d->lcoords[dim_y] = (d->lcoords[dim_y] <= 83 ?
           d->lcoords[dim_y] + 10: 93);
       return 1;
     }
-  } 
+  }
 
   else if(move == MV_DWN_LEFT_1 || move == MV_DWN_LEFT_2) {
     next[dim_x] = d->player.x - 1;
-    next[dim_y] = d->player.y + 1; 
-  } 
+    next[dim_y] = d->player.y + 1;
+  }
 
   else if(move == MV_LEFT_1 || move == MV_LEFT_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = d->player.x - 1;
-      next[dim_y] = d->player.y; 
+      next[dim_y] = d->player.y;
     }
 
     else {
-      d->lcoords[dim_x] = (d->lcoords[dim_x] >= 59 ? 
+      d->lcoords[dim_x] = (d->lcoords[dim_x] >= 59 ?
           d->lcoords[dim_x] - 20: 39);
       return 1;
     }
-  } 
+  }
 
   else if(move == REST_1|| move == REST_2) {
     next[dim_x] = d->player.x;
-    next[dim_y] = d->player.y; 
+    next[dim_y] = d->player.y;
   }
 
   else if(move == MV_UP_STAIRS) {
     return mv_up_stairs(d);
-  } 
+  }
 
   else if(move == MV_DWN_STAIRS) {
     return mv_dwn_stairs(d);
-  } 
+  }
 
   else if(move == LOOK_MODE) {
     if(d->view_mode != LOOK_MODE) {
@@ -118,7 +118,7 @@ int move_pc(_dungeon *d, int32_t move) {
       return 1;
     }
     else return 1;
-  } 
+  }
 
   else if(move == CONTROL_MODE) {
     if(d->view_mode != CONTROL_MODE) {
@@ -157,7 +157,7 @@ int move_pc(_dungeon *d, int32_t move) {
 
 }
 
-/* Here there be monsters (as in really crappy code) 
+/* Here there be monsters (as in really crappy code)
  * You've been warned... */
 uint8_t move_npc(_dungeon *d, _npc *mon) {
   uint8_t x_l, x_h, y_l, y_h, x, y;
@@ -165,13 +165,13 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
   x_h = mon->x + 1;
   y_l = mon->y - 1;
   y_h = mon->y + 1;
-  
+
   pair_t best;
   best[dim_x] = mon->x;
   best[dim_y] = mon->y;
 
   /* monster has no traits */
-  
+
   /* check if Erratic */
   if(mon->trait & NPC_ERRATIC && ((rand() % 2) == 1)) {
 
@@ -185,7 +185,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
       if(hardnesspair(best) != 0 && hardnesspair(best) != 255) {
         if(hardnesspair(best) < 85) {
           hardnesspair(best) = 0;
-        }     
+        }
 
         else {
           hardnesspair(best) -= 85;
@@ -194,7 +194,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
       }
 
       if(hardnesspair(best) == 0) {
-        
+
         if(mappair(best) == ter_wall) {
           mappair(best) = ter_floor_hall;
           pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
@@ -205,11 +205,11 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         mon->prev[dim_x] = mon->x;
         mon->prev[dim_y] = mon->y;
         mon->x = best[dim_x];
-        mon->y = best[dim_y]; 
+        mon->y = best[dim_y];
         char_gridpair(best) = mon;
-      } 
-    } 
-    
+      }
+    }
+
     else {
       find_rand_neighbor(d, mon->x, mon->y, NON_TUNNEL_MODE, best);
 
@@ -221,7 +221,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
       mon->prev[dim_x] = mon->x;
       mon->prev[dim_y] = mon->y;
       mon->x = best[dim_x];
-      mon->y = best[dim_y]; 
+      mon->y = best[dim_y];
       char_gridpair(best) = mon;
     }
 
@@ -232,11 +232,11 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
   }
 
   /* Smart monsters */
-  if(mon->trait & NPC_SMART) { 
+  if(mon->trait & NPC_SMART) {
 
     /* Smart Telepathic monsters */
     if(mon->trait & NPC_TELEPATH) {
-      
+
       /* Smart Telepathic Tunneling monsters */
       if(mon->trait & NPC_TUNNEL) {
 
@@ -246,10 +246,11 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               if(tunnelxy(x, y).cost <= tunnelpair(best).cost) {
                 best[dim_x] = x;
                 best[dim_y] = y;
+                break;
               }
             }
           }
-        } 
+        }
 
         if(handle_killing(d, mon->x, mon->y, best, NPC_MODE) == 1) {
           return 1;
@@ -258,7 +259,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         if(hardnesspair(best) != 0 && hardnesspair(best) != 255) {
           if(hardnesspair(best) < 85) {
             hardnesspair(best) = 0;
-          }     
+          }
 
           else {
             hardnesspair(best) -= 85;
@@ -278,9 +279,9 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           mon->prev[dim_x] = mon->x;
           mon->prev[dim_y] = mon->y;
           mon->x = best[dim_x];
-          mon->y = best[dim_y]; 
+          mon->y = best[dim_y];
           char_gridpair(best) = mon;
-        }  
+        }
       }
 
       /* Smart Telepathic Non-Tunneling monsters */
@@ -291,10 +292,11 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               if(ntunnelxy(x, y).cost <= ntunnelpair(best).cost) {
                 best[dim_x] = x;
                 best[dim_y] = y;
+                break;
               }
             }
           }
-        } 
+        }
 
         if(handle_killing(d, mon->x, mon->y, best, NPC_MODE) == 1) {
           return 1;
@@ -304,12 +306,12 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         mon->prev[dim_x] = mon->x;
         mon->prev[dim_y] = mon->y;
         mon->x = best[dim_x];
-        mon->y = best[dim_y]; 
+        mon->y = best[dim_y];
         char_gridpair(best) = mon;
       }
     }
 
-    /* Smart Non-Telepathic monsters */ 
+    /* Smart Non-Telepathic monsters */
     else {
 
       /*Smart Non-Telepathic Non-Tunneling monsters */
@@ -318,7 +320,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
 
         /* If pc is in LoS */
         if(mon->pc_los == 1) {
-          
+
           for(x = x_l; x <= x_h; x++) {
             for(y = y_l; y <= y_h; y++) {
               if(x != mon->x || y != mon->y) {
@@ -328,7 +330,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
                 }
               }
             }
-          } 
+          }
           mon->pc_lsp[dim_y] = d->player.y;
           mon->pc_lsp[dim_x] = d->player.x;
         }
@@ -350,7 +352,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               best[dim_x] = mon->x - 1;
               best[dim_y] = mon->y;
             }
-          } 
+          }
 
           else if(mon->pc_lsp[dim_x] > mon->x) {
             if(mon->pc_lsp[dim_y] < mon->y && hardnessxy(mon->x + 1, mon->y - 1) == 0) {
@@ -398,7 +400,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         mon->prev[dim_x] = mon->x;
         mon->prev[dim_y] = mon->y;
         mon->x = best[dim_x];
-        mon->y = best[dim_y]; 
+        mon->y = best[dim_y];
         char_gridpair(best) = mon;
       }
 
@@ -413,11 +415,11 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
                 if(tunnelxy(x, y).cost <= tunnelpair(best).cost) {
                   best[dim_x] = x;
                   best[dim_y] = y;
-
+                  break;
                 }
               }
             }
-          } 
+          }
           mon->pc_lsp[dim_y] = d->player.y;
           mon->pc_lsp[dim_x] = d->player.x;
         }
@@ -439,7 +441,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               best[dim_x] = mon->x - 1;
               best[dim_y] = mon->y;
             }
-          } 
+          }
 
           else if(mon->pc_lsp[dim_x] > mon->x) {
             if(mon->pc_lsp[dim_y] < mon->y) {
@@ -471,7 +473,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
 
         else {
           search_for_pc(d, mon, best);
-        }  
+        }
 
         if(handle_killing(d, mon->x, mon->y, best, NPC_MODE) == 1) {
           return 1;
@@ -480,7 +482,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         if(hardnesspair(best) != 0 && hardnesspair(best) != 255) {
           if(hardnesspair(best) < 85) {
             hardnesspair(best) = 0;
-          }     
+          }
 
           else {
             hardnesspair(best) -= 85;
@@ -489,7 +491,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          
+
           if(mappair(best) == ter_wall) {
             mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
@@ -501,9 +503,9 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           mon->prev[dim_x] = mon->x;
           mon->prev[dim_y] = mon->y;
           mon->x = best[dim_x];
-          mon->y = best[dim_y]; 
+          mon->y = best[dim_y];
           char_gridpair(best) = mon;
-        }  
+        }
       }
     }
   }
@@ -531,7 +533,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
             best[dim_x] = mon->x - 1;
             best[dim_y] = mon->y;
           }
-        } 
+        }
 
         else if(d->player.x > mon->x) {
           if(d->player.y < mon->y) {
@@ -567,7 +569,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         if(hardnesspair(best) != 0 && hardnesspair(best) != 255) {
           if(hardnesspair(best) < 85) {
             hardnesspair(best) = 0;
-          }     
+          }
 
           else {
             hardnesspair(best) -= 85;
@@ -576,7 +578,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          
+
           if(mappair(best) == ter_wall) {
             mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
@@ -587,14 +589,14 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           mon->prev[dim_x] = mon->x;
           mon->prev[dim_y] = mon->y;
           mon->x = best[dim_x];
-          mon->y = best[dim_y]; 
+          mon->y = best[dim_y];
           char_gridpair(best) = mon;
         }
       }
 
       /* Non-Smart Telepathic Non-Tunneling monsters */
       else {
-        
+
         if(d->player.x < mon->x && hardnessxy(mon->x - 1, mon->y) == 0) {
           best[dim_x] = mon->x - 1;
           best[dim_y] = mon->y;
@@ -642,14 +644,14 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
 
         if(handle_killing(d, mon->x, mon->y, best, NPC_MODE) == 1) {
          return 1;
-        } 
+        }
 
         char_gridxy(mon->x, mon->y) = NULL;
         mon->prev[dim_x] = mon->x;
         mon->prev[dim_y] = mon->y;
         mon->x = best[dim_x];
-        mon->y = best[dim_y]; 
-        char_gridpair(best) = mon; 
+        mon->y = best[dim_y];
+        char_gridpair(best) = mon;
       }
     }
 
@@ -676,7 +678,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               best[dim_x] = mon->x - 1;
               best[dim_y] = mon->y;
             }
-          } 
+          }
 
           else if(d->player.x > mon->x) {
             if(d->player.y < mon->y) {
@@ -717,7 +719,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         if(hardnesspair(best) != 0 && hardnesspair(best) != 255) {
           if(hardnesspair(best) < 85) {
             hardnesspair(best) = 0;
-          }     
+          }
 
           else {
             hardnesspair(best) -= 85;
@@ -727,7 +729,7 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
         }
 
         if(hardnesspair(best) == 0) {
-          
+
           if(mappair(best) == ter_wall) {
             mappair(best) = ter_floor_hall;
             pathfinding(d, d->player.x, d->player.y, d->tunnel_map, TUNNEL_MODE);
@@ -739,8 +741,8 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
           mon->prev[dim_x] = mon->x;
           mon->prev[dim_y] = mon->y;
           mon->x = best[dim_x];
-          mon->y = best[dim_y]; 
-          char_gridpair(best) = mon; 
+          mon->y = best[dim_y];
+          char_gridpair(best) = mon;
         }
       }
 
@@ -802,20 +804,20 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
 
         if(handle_killing(d, mon->x, mon->y, best, NPC_MODE) == 1) {
           return 1;
-        } 
+        }
 
         check_cur_room(d, mon, NPC_MODE);
         char_gridxy(mon->x, mon->y) = NULL;
         mon->prev[dim_x] = mon->x;
         mon->prev[dim_y] = mon->y;
         mon->x = best[dim_x];
-        mon->y = best[dim_y]; 
+        mon->y = best[dim_y];
         char_gridpair(best) = mon;
       }
     }
   }
 
-  
+
 
   return 0;
 
@@ -828,16 +830,16 @@ void init_monsters(_dungeon *d) {
   _npc tmp;
 
   for(i = 0; i < d->nummon; i++) {
-    do {   
+    do {
       tmp.speed = rand_range(5, 20);
-      tmp.trait = rand() % 16; 
-      mon_room = rand_range(1, d->num_rooms); 
-   
-      tmp.x = rand_range(d->rooms[mon_room].x + 1,                          
+      tmp.trait = rand() % 16;
+      mon_room = rand_range(1, d->num_rooms);
+
+      tmp.x = rand_range(d->rooms[mon_room].x + 1,
                  d->rooms[mon_room].length - 1 + d->rooms[mon_room].x);
       tmp.y = rand_range(d->rooms[mon_room].y + 1, d->rooms[mon_room].height - 1 + d->rooms[mon_room].y);
       tmp.curroom = mon_room;
-  
+
     } while(add_mon(d, &tmp));
     d->npc_arr[i] = tmp;
     init_char_array(d);

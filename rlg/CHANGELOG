@@ -1,46 +1,46 @@
 ########## CHANGELOG ##########
 
 v1.01 -------
-1/19/2017 - Started project  
-1/20/2017 - Added print(char *g[Ymax][Xmax]), int *make_rooms(int ret[], size) 
-1/20/2017 - Added struct room to store room parameters 
-1/21/2017 - Changed make_rooms(int *ret,size) to void and use a pointer of struct room arr[] 
+1/19/2017 - Started project
+1/20/2017 - Added print(char *g[Ymax][Xmax]), int *make_rooms(int ret[], size)
+1/20/2017 - Added struct room to store room parameters
+1/21/2017 - Changed make_rooms(int *ret,size) to void and use a pointer of struct room arr[]
 1/21/2017 - Fixed a bug in make_rooms() where rooms were sometimes printing below required
-              sizes (missing parenthesis in modulo formula on rand()) 
-1/21/2017 - Added connect_rooms(char *grid[Ymax][Xmax], int *ret, size) 
-1/22/2017 - Initial implementation simply connects rooms directly in order from array. Will implement Dijkstra's algorithm next 
+              sizes (missing parenthesis in modulo formula on rand())
+1/21/2017 - Added connect_rooms(char *grid[Ymax][Xmax], int *ret, size)
+1/22/2017 - Initial implementation simply connects rooms directly in order from array. Will implement Dijkstra's algorithm next
 
 v1.02 ------
-1/26/2017 - Significant changes, added large amounts of Dr. Sheaffer's implementation from assignment1.01: including 
-1/26/2017     various macros, terrain_type enum, struct queue_node, smooth_hardness function                         
-1/27/2017 - Added read_to_file(_dungeon *d, char *path) function, initially using fscanf() *later changed to fread()* 
-1/28/2017 - Added save_to_file(_dungeon *d, char *path) using fwrite() 
-1/28/2017 - Added string concatination to get path 
-1/28/2017 - Added command line handling for --load and --save switches 
-1/29/2017 - Added parameter that allows loading of custom file 
-1/31/2017 - Fixed a bug where hardness was not being saved correctly (wrong parameters for fwrite) 
-1/31/2017 - Fixed a bug where files would sometime load correctly (was a problem with my realloc call on rooms array) 
-1/31/2017 - Fixed a bug where large dungeon files would infinite loop (was using 8-bit ints for dungeons with many rooms) 
-2/01/2017 - Added endianess checking 
+1/26/2017 - Significant changes, added large amounts of Dr. Sheaffer's implementation from assignment1.01: including
+1/26/2017     various macros, terrain_type enum, struct queue_node, smooth_hardness function
+1/27/2017 - Added read_to_file(_dungeon *d, char *path) function, initially using fscanf() *later changed to fread()*
+1/28/2017 - Added save_to_file(_dungeon *d, char *path) using fwrite()
+1/28/2017 - Added string concatination to get path
+1/28/2017 - Added command line handling for --load and --save switches
+1/29/2017 - Added parameter that allows loading of custom file
+1/31/2017 - Fixed a bug where hardness was not being saved correctly (wrong parameters for fwrite)
+1/31/2017 - Fixed a bug where files would sometime load correctly (was a problem with my realloc call on rooms array)
+1/31/2017 - Fixed a bug where large dungeon files would infinite loop (was using 8-bit ints for dungeons with many rooms)
+2/01/2017 - Added endianess checking
 
-v1.03 ------ 
+v1.03 ------
 2/02/2017 - Fixed a bug where --load switch was not working on other machines - didn't initialize a variable declared within
-              read_from_file() (Not sure why it worked without error on my machine?) 
+              read_from_file() (Not sure why it worked without error on my machine?)
 2/02/2017 - Added Dr. Sheaffer's corridor pathing algorithm
-2/03/2017 - Added random pc placement 
-2/04/2017 - Added parameters to load pc into specified coordinates --pc (y x) --- no error checking so be sure to include coordinates 
-2/04/2017 - Added --rand (seed) parameter and shorthand parameter options -l -s -r -p 
+2/03/2017 - Added random pc placement
+2/04/2017 - Added parameters to load pc into specified coordinates --pc (y x) --- no error checking so be sure to include coordinates
+2/04/2017 - Added --rand (seed) parameter and shorthand parameter options -l -s -r -p
 2/05/2017 - Added pathfinding() function containing 2 modified implementations of Dr. Sheaffer's Dijkstra's Algorithm
-              Cost for for nontunneling moonster map increments by 1, while cost for tunneling monster map increments by 
+              Cost for for nontunneling moonster map increments by 1, while cost for tunneling monster map increments by
               weighted value of hardness between 0 and 3. Array of paths is stored in dungeon struct for maps.
 2/06/2017 - Fixed a bug where tunneling monster algorithm was updating costs incorrectly, was adding weights of 0 for cells with
-              hardness of 0 
+              hardness of 0
 2/06/2017 - Fixed a bug where tunneling monster map was calculating incorrectly - was accidentally checking 7 neighbors instead of 8
 
 v1.04 ------
 2/08/2017 - Added pc movement, pc just moves around te edges of the first room in rooms array
-2/08/2017 - Added monsters and monster array -- monsters are added randomly throughout rooms 
-2/10/2017 - Began adding move_npc() function 
+2/08/2017 - Added monsters and monster array -- monsters are added randomly throughout rooms
+2/10/2017 - Began adding move_npc() function
              - Added eratic monsters
              - Added smart telepathic non tunneling monsters
 2/11/2017 - Added npc.prev to keep track of what terrain was before stepping on it - did not yet implement 2d character array
@@ -51,6 +51,7 @@ v1.04 ------
 2/18/2017 - Added search_for_pc() -- npcs store a new corridor_path array to the next room in the array to search
 2/20/2017 - Fixed a bug where non-smart non-telepathic monsters were moving incorrectly
 2/20/2017 - Implemented heap for character events (was just using an array)
-2/22/2017 - Fixed various monster movement bugs 
- 
+2/22/2017 - Fixed various monster movement bugs
 
+v1.05 ------
+2/27/2017 - 
