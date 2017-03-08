@@ -360,9 +360,9 @@ void connect_rooms(_dungeon *d) {
 
 int place_stairs(_dungeon *d) {
   int xd1, xd2, yd1, yd2, xu1, xu2, xu3, yu1, yu2, yu3;
-  xd1 = rand_range(d->rooms[0].x + 1, d->rooms[0].length - 2 + d->rooms[0].x);
+  xd1 = rand_range(d->rooms[1].x + 1, d->rooms[1].length - 2 + d->rooms[1].x);
   xd2 = rand_range(d->rooms[2].x + 1, d->rooms[2].length - 2 + d->rooms[2].x);
-  yd1 = rand_range(d->rooms[0].y + 1, d->rooms[0].height - 2 + d->rooms[0].y);
+  yd1 = rand_range(d->rooms[1].y + 1, d->rooms[1].height - 2 + d->rooms[1].y);
   yd2 = rand_range(d->rooms[2].y + 1, d->rooms[2].height - 2 + d->rooms[2].y);
   xu1 = rand_range(d->rooms[3].x + 1, d->rooms[3].length - 2 + d->rooms[3].x);
   xu2 = rand_range(d->rooms[4].x + 1, d->rooms[4].length - 2 + d->rooms[4].x);

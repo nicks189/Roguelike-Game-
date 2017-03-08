@@ -115,9 +115,8 @@ int move_pc(_dungeon *d, int32_t move) {
       else if(d->lcoords[dim_y] > 93) d->lcoords[dim_y] = 93;
       if(d->lcoords[dim_x] > 119) d->lcoords[dim_x] = 119;
       else if(d->lcoords[dim_x] < 39) d->lcoords[dim_x] = 39;
-      return 1;
     }
-    else return 1;
+    return 1;
   }
 
   else if(move == CONTROL_MODE) {
@@ -126,9 +125,8 @@ int move_pc(_dungeon *d, int32_t move) {
       d->lcoords[dim_x] = d->player.x;
       d->lcoords[dim_y] = d->player.y;
       print(d);
-      return 1;
     }
-    else return 1;
+    return 1;
   }
 
   else if(move == QUIT_GAME) {
@@ -246,7 +244,6 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               if(tunnelxy(x, y).cost <= tunnelpair(best).cost) {
                 best[dim_x] = x;
                 best[dim_y] = y;
-                break;
               }
             }
           }
@@ -292,7 +289,6 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
               if(ntunnelxy(x, y).cost <= ntunnelpair(best).cost) {
                 best[dim_x] = x;
                 best[dim_y] = y;
-                break;
               }
             }
           }
@@ -415,7 +411,6 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
                 if(tunnelxy(x, y).cost <= tunnelpair(best).cost) {
                   best[dim_x] = x;
                   best[dim_y] = y;
-                  break;
                 }
               }
             }
