@@ -6,7 +6,6 @@ int32_t event_cmp(const void *key, const void *with) {
 }
 
 uint8_t add_mon(_dungeon *d, _npc *mon) {
-
   if(mapxy(mon->x, mon->y) == ter_floor_room) {
     if(mon->trait == 15)
       mon->type = 'f';
@@ -53,17 +52,28 @@ void init_char_array(_dungeon *d) {
   } 
 }
 
-uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp) {
-
-  if(temp[dim_x] == d->player.x && temp[dim_y] == d->player.y)  {
-    mappair(temp) = endgame_flag; 
-    return 1;
+inline uint8_t handle_killing(_dungeon *d, uint8_t x_i, uint8_t y_i, int16_t *temp, uint8_t mode) {
+  if(mode == NPC_MODE) {
+    if(temp[dim_x] == d->player.x && temp[dim_y] == d->player.y)  {
+      mappair(temp) = endgame_flag; 
+      return 1;
+    }
+    
+    else if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
+          || temp[dim_y] != y_i)) {
+      char_gridpair(temp)->x = char_gridpair(temp)->prev[dim_x]; 
+      char_gridpair(temp)->y = char_gridpair(temp)->prev[dim_y];
+      char_gridxy(char_gridpair(temp)->x, char_gridpair(temp)->y) = char_gridpair(temp);
+      char_gridpair(temp) = NULL;
+    }
   }
-  
-  else if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
-      || temp[dim_y] != y_i)) {
-    char_gridpair(temp)->dead = 1; 
-    char_gridpair(temp) = NULL;
+
+  else {
+    if(char_gridpair(temp) != NULL && (temp[dim_x] != x_i 
+          || temp[dim_y] != y_i)) {
+      char_gridpair(temp)->dead = 1; 
+      char_gridpair(temp) = NULL;
+    }
   }
 
   return 0;
@@ -96,7 +106,7 @@ void search_for_pc(_dungeon *d, _npc *mon, int16_t *ret) {
   if(!mon->searching) {
     mon->searching = 1;
 
-    if(mon->curroom + 1 < d->num_rooms) {
+    if(mon->curroom + 1 < d->num_rooms - 1) {
       mon->search_to[dim_x] = d->rooms[mon->curroom + 1].x + 1;
       mon->search_to[dim_y] = d->rooms[mon->curroom + 1].y + 1;
     }
@@ -140,16 +150,18 @@ void find_rand_neighbor(_dungeon *d, uint8_t x, uint8_t y, uint8_t mode, int16_t
   } while(!done); 
 }
 
+/* looks through the room array for matching position if we are 
+ * currently in a room and haven't already determined what room we're in; 
+ * also only checking for non-telepathic monsters */
 void check_cur_room(_dungeon *d, _npc *m, uint8_t mode) {
   uint16_t i;
 
   if(mode == PC_MODE) {
     if(mapxy(d->player.x, d->player.y) != ter_floor_room) {
       d->player.curroom = 255;
-      return;
     }
 
-    if(d->player.curroom == 255) {
+    else if(d->player.curroom == 255) {
       for (i = 0; i < d->num_rooms; i++) {
         if ((d->player.x >= d->rooms[i].x) &&
             (d->player.x < (d->rooms[i].x + d->rooms[i].length)) &&
@@ -165,10 +177,9 @@ void check_cur_room(_dungeon *d, _npc *m, uint8_t mode) {
   else if(mode == NPC_MODE) {
     if(mapxy(m->x, m->y) != ter_floor_room) {
       m->curroom = 255;
-      return;
     }
 
-    if(m->curroom == 255) {
+    else if(m->curroom == 255) {
       for (i = 0; i < d->num_rooms; i++) {
         if ((m->x >= d->rooms[i].x) &&
             (m->x < (d->rooms[i].x + d->rooms[i].length)) &&
@@ -182,9 +193,8 @@ void check_cur_room(_dungeon *d, _npc *m, uint8_t mode) {
   }
 }
 
+/* Uses Bresenham's Line Algorithm */
 void check_los(_dungeon *d, _npc *m) {
-  uint8_t x, y; 
-
   if(m->curroom == d->player.curroom && m->curroom != 255) {
     m->pc_los = 1;
     return;
@@ -193,118 +203,84 @@ void check_los(_dungeon *d, _npc *m) {
   else {
     m->pc_los = 0;
   }
+  
+  pair_t first, second;
+  pair_t del, f;
+  int32_t a, b, c, i; 
 
-  if(m->x > d->player.x) { 
-    if(m->y < d->player.y) {
-      x = m->x - 1;
-      y = m->y + 1;  
-      /* SW */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        x--;
-        y++;
-      }
-    }
+  first[dim_x] = m->x;
+  first[dim_y] = m->x;
+  second[dim_x] = d->player.x;
+  second[dim_y] = d->player.y;
 
-    else if(m->y > d->player.y) { 
-      x = m->x - 1;
-      y = m->y - 1;  
-      /* NW */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        x--;
-        y--;
-      }
-    }
-
-    else {
-      x = m->x - 1;
-      y = m->y;  
-      /* W */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        x--;
-      }
-    }
+  if((abs(first[dim_x] - second[dim_x]) > VISUAL_RANGE) || 
+      (abs(first[dim_y] - second[dim_y]) > VISUAL_RANGE)) {
+    m->pc_los = 0;
+    return; 
   }
-
-  else if(m->x < d->player.x) {
-    if(m->y < d->player.y) {
-      x = m->x + 1;
-      y = m->y + 1;  
-      /* SE */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        x++;
-        y++;
-      }
-    }
       
-    else if(m->y > d->player.y) {
-      x = m->x + 1;
-      y = m->y - 1;  
-      /* NE */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        x++;
-        y--;
-      }
-    }
-
-    else {
-      x = m->x + 1;
-      y = m->y;  
-      /* E */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        x++;
-      }
-    }
+  /* Find deltax & delta y */
+  if (second[dim_x] > first[dim_x]) {
+    del[dim_x] = second[dim_x] - first[dim_x];
+    f[dim_x] = 1;
+  } 
+  
+  else {
+    del[dim_x] = first[dim_x] - second[dim_x];
+    f[dim_x] = -1;
   }
+
+  if (second[dim_y] > first[dim_y]) {
+    del[dim_y] = second[dim_y] - first[dim_y];
+    f[dim_y] = 1;
+  }
+ 
+  else {
+    del[dim_y] = first[dim_y] - second[dim_y];
+    f[dim_y] = -1;
+  }
+
+  if (del[dim_x] > del[dim_y]) {
+    a = del[dim_y] + del[dim_y];
+    c = a - del[dim_x];
+    b = c - del[dim_x];
+    for (i = 0; i <= del[dim_x]; i++) {
+      if ((mappair(first) < ter_floor) && i && (i != del[dim_x])) {
+        return;
+      }
+      first[dim_x] += f[dim_x];
+      if (c < 0) {
+        c += a;
+      }
+
+      else {
+        c += b;
+        first[dim_y] += f[dim_y];
+      }
+    }
+    m->pc_los = 1;
+    return;
+  } 
 
   else {
-    if(m->y > d->player.y) { 
-      x = m->x;
-      y = m->y + 1;  
-      /* N */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        y++;
+    a = del[dim_x] + del[dim_x];
+    c = a - del[dim_y];
+    b = c - del[dim_y];
+    for (i = 0; i <= del[dim_y]; i++) {
+      if ((mappair(first) < ter_floor) && i && (i != del[dim_y])) {
+        return;
+      }
+      first[dim_y] += f[dim_y];
+      if (c < 0) {
+        c += a;
+      } 
+      
+      else {
+        c += b;
+        first[dim_x] += f[dim_x];
       }
     }
-
-    else {
-      x = m->x;
-      y = m->y + 1;  
-      /* S */
-      while(hardnessxy(x, y) == 0) {
-        if(x == d->player.x && y == d->player.y) {
-          m->pc_los = 1;
-          return;
-        }
-        y++;
-      }
-    }
+    m->pc_los = 1;
+    return;
   }
 }

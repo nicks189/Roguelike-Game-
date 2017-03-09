@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
+#include <ncurses.h>
 
 #include "heap.h"
 
@@ -62,6 +63,8 @@ typedef enum __attribute__ ((__packed__)) terrain_type {
   ter_floor,
   ter_floor_room,
   ter_floor_hall,
+  ter_stairs_up,
+  ter_stairs_down,
   endgame_flag
 } _terrain_type;
 
@@ -80,6 +83,7 @@ typedef struct npc {
   uint32_t trait; 
   char type;
   pair_t pc_lsp;
+  pair_t prev;
   corridor_path_t search_map[DUNGEON_Y][DUNGEON_X];
   pair_t search_to;
 } _npc;
@@ -99,10 +103,11 @@ typedef struct room {
 } _room;
 
 typedef struct dungeon {
-  uint32_t num_rooms;
+  uint8_t view_mode;
+  pair_t lcoords;
+  uint32_t num_rooms, nummon;
   long int seed; 
   _room *rooms;
-  uint32_t nummon;
   _terrain_type map[DUNGEON_Y][DUNGEON_X];
   _npc *char_grid[DUNGEON_Y][DUNGEON_X];
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
@@ -112,7 +117,10 @@ typedef struct dungeon {
   _npc *npc_arr;
 } _dungeon;
 
-int end_game(int mode, _dungeon *d);
+
+int mv_up_stairs(_dungeon *d);
+int mv_dwn_stairs(_dungeon *d);
+int end_game(_dungeon *d, int mode);
 int smooth_hardness(_dungeon *d);
 void empty_dungeon(_dungeon *d);
 int in_room(_dungeon *d, int16_t y, int16_t x);
