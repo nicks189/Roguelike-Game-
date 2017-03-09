@@ -17,13 +17,11 @@ void place_pc(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
     d->player.y = rand_range(d->rooms[0].y + 1,
                                d->rooms[0].height - 1 + d->rooms[0].y);
   }
-
-  //printf("PC is at (y, x): %d, %d\n", d->player.y, d->player.x);
 }
 
 int move_pc(_dungeon *d, int32_t move) {
   pair_t next;
-  if(move == MV_UP_LEFT_1 || move == MV_UP_LEFT_2) {
+  if((move == MV_UP_LEFT_1 || move == MV_UP_LEFT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = d->player.x - 1;
     next[dim_y] = d->player.y - 1;
   }
@@ -41,7 +39,7 @@ int move_pc(_dungeon *d, int32_t move) {
     }
   }
 
-  else if(move == MV_UP_RIGHT_1 || move == MV_UP_RIGHT_2) {
+  else if((move == MV_UP_RIGHT_1 || move == MV_UP_RIGHT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = d->player.x + 1;
     next[dim_y] = d->player.y - 1;
   }
@@ -59,7 +57,7 @@ int move_pc(_dungeon *d, int32_t move) {
     }
   }
 
-  else if(move == MV_DWN_RIGHT_1 || move == MV_DWN_RIGHT_2) {
+  else if((move == MV_DWN_RIGHT_1 || move == MV_DWN_RIGHT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = d->player.x + 1;
     next[dim_y] = d->player.y + 1;
   }
@@ -77,7 +75,7 @@ int move_pc(_dungeon *d, int32_t move) {
     }
   }
 
-  else if(move == MV_DWN_LEFT_1 || move == MV_DWN_LEFT_2) {
+  else if((move == MV_DWN_LEFT_1 || move == MV_DWN_LEFT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = d->player.x - 1;
     next[dim_y] = d->player.y + 1;
   }
@@ -95,7 +93,7 @@ int move_pc(_dungeon *d, int32_t move) {
     }
   }
 
-  else if(move == REST_1|| move == REST_2) {
+  else if((move == REST_1|| move == REST_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = d->player.x;
     next[dim_y] = d->player.y;
   }
@@ -812,8 +810,6 @@ uint8_t move_npc(_dungeon *d, _npc *mon) {
     }
   }
 
-
-
   return 0;
 
   /* As a side note, I'm fully aware how terrible this is */
@@ -828,15 +824,23 @@ void init_monsters(_dungeon *d) {
     do {
       tmp.speed = rand_range(5, 20);
       tmp.trait = rand() % 16;
-      mon_room = rand_range(1, d->num_rooms);
+      mon_room = rand_range(1, d->num_rooms - 1);
 
       tmp.x = rand_range(d->rooms[mon_room].x + 1,
                  d->rooms[mon_room].length - 1 + d->rooms[mon_room].x);
       tmp.y = rand_range(d->rooms[mon_room].y + 1, d->rooms[mon_room].height - 1 + d->rooms[mon_room].y);
       tmp.curroom = mon_room;
+      tmp.searching = 0;
+      tmp.pc_los = 0;
+      tmp.pc_lsp[dim_x] = 0;
+      tmp.pc_lsp[dim_y] = 0;
+      tmp.prev[dim_x] = 0;
+      tmp.prev[dim_y] = 0;
+      tmp.search_to[dim_x] = 0;
+      tmp.search_to[dim_y] = 0;
 
     } while(add_mon(d, &tmp));
     d->npc_arr[i] = tmp;
-    init_char_array(d);
   }
+  init_char_array(d);
 }

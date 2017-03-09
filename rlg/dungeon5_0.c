@@ -41,8 +41,8 @@ void unmount_ncurses(void) {
 int mv_up_stairs(_dungeon *d) {
   if(mapxy(d->player.x, d->player.y) == ter_stairs_up) {
     d->seed = time(NULL);
-    d->nummon = rand_range(18, 25);
     delete_dungeon(d);
+    d->nummon = rand_range(18, 25);
     create_dungeon(d, 0, 0, 0, 0, 0, 0);
   }
   return 1;
@@ -51,8 +51,8 @@ int mv_up_stairs(_dungeon *d) {
 int mv_dwn_stairs(_dungeon *d) {
   if(mapxy(d->player.x, d->player.y) == ter_stairs_down) {
     d->seed = time(NULL);
-    d->nummon = rand_range(18, 25);
     delete_dungeon(d);
+    d->nummon = rand_range(18, 25);
     create_dungeon(d, 0, 0, 0, 0, 0, 0);
   }
   return 1;
@@ -453,14 +453,14 @@ void print(_dungeon *d) {
         switch(mapxy(x, y)) {
           case ter_wall:
           case ter_wall_immutable:
-            mvaddch(py, px, '#' | COLOR_PAIR(7));
+            mvaddch(py, px, ' ' | COLOR_PAIR(7));
             break;
           case ter_floor:
           case ter_floor_room:
             mvaddch(py, px, '.' | COLOR_PAIR(7));
             break;
           case ter_floor_hall:
-            mvaddch(py, px, '.' | COLOR_PAIR(7));
+            mvaddch(py, px, '#' | COLOR_PAIR(7));
             break;
          case ter_stairs_down:
             mvaddch(py, px, '>' | COLOR_PAIR(1));
@@ -583,8 +583,10 @@ void delete_dungeon(_dungeon *d) {
   int i, j;
   for(i = 0; i < d->nummon; i++) {
     d->npc_arr[i].curroom = 0;
-    d->npc_arr[i].pc_lsp[dim_x] = d->npc_arr[i].pc_lsp[dim_y] = 0;
-    d->npc_arr[i].search_to[dim_x] = d->npc_arr[i].search_to[dim_y] = 0;
+    d->npc_arr[i].pc_lsp[dim_x] = 0;
+    d->npc_arr[i].pc_lsp[dim_y] = 0;
+    d->npc_arr[i].search_to[dim_x] = 0;
+    d->npc_arr[i].search_to[dim_y] = 0;
     d->npc_arr[i].dead = 0;
     d->npc_arr[i].searching = 0;
     d->npc_arr[i].pc_los = 0;
@@ -603,6 +605,9 @@ void delete_dungeon(_dungeon *d) {
       d->char_grid[j][i] = NULL;
     }
   }
+
+  free(d->npc_arr);
+  free(d->rooms);
 }
 
 void init_dungeon(_dungeon *d, uint8_t load) {
@@ -718,7 +723,7 @@ int create_dungeon(_dungeon *d, uint8_t load,
 
   else {
     d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
-    d->rooms = malloc(sizeof(_room) * MAX_ROOMS);
+    d->rooms = malloc(sizeof(*d->rooms) * d->num_rooms);
     d->npc_arr = malloc(sizeof(_npc) * d->nummon);
     pc_loaded = 0;
     init_dungeon(d, load);

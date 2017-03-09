@@ -7,6 +7,7 @@
 #define NPC_TELEPATH 0x00000002
 #define NPC_TUNNEL 0x00000004
 #define NPC_ERRATIC 0x00000008
+#define VISUAL_RANGE 20
 #define PC_MODE 0
 #define NPC_MODE 1
 
