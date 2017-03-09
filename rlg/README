@@ -1,6 +1,9 @@
 ########## README ##########
 
-
-  TODO
+Game now plays through ncurses and the PC can be controlled with the standard 
+controls given in the PDF, with the single exception that exiting look mode 
+requires double-tapping escape. Moreover on look mode: the screen shifts 20 
+grid cells left/right or 10 grid cells up/down with respective commands. Stairs 
+work both ways; deleting the old dungeon and creating a new one.
   
 
