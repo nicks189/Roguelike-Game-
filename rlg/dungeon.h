@@ -38,6 +38,8 @@
 #define char_gridxy(x, y) (d->char_grid[y][x])
 #define char_gridpair(pair) (d->char_grid[pair[dim_y]][pair[dim_x]])
 
+typedef struct pc _pc;
+typedef struct npc _npc;
 
 /* --from Dr Sheaffer-- */ 
 typedef struct corridor_path {
@@ -68,41 +70,12 @@ typedef enum __attribute__ ((__packed__)) terrain_type {
   endgame_flag
 } _terrain_type;
 
-enum event_type {
-  npc_type,
-  pc_type
-};
-
-typedef struct pc {
-  uint8_t x, y, speed;
-  uint8_t curroom;
-} _pc;
-
-typedef struct npc {
-  uint8_t x, y, dead, curroom, pc_los, searching, speed;
-  uint32_t trait; 
-  char type;
-  pair_t pc_lsp;
-  pair_t prev;
-  corridor_path_t search_map[DUNGEON_Y][DUNGEON_X];
-  pair_t search_to;
-} _npc;
-
-typedef struct event {
-  uint32_t time;
-  enum event_type type;
-  uint32_t sequence;
-  union {
-    _pc *pc;
-    _npc *npc;
-  } u;
-} event_t;
-
 typedef struct room {
   uint8_t x, y, length, height;
 } _room;
 
 typedef struct dungeon {
+  heap_t event_heap;
   uint8_t view_mode;
   pair_t lcoords;
   uint32_t num_rooms, nummon;
@@ -113,19 +86,23 @@ typedef struct dungeon {
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   corridor_path_t tunnel_map[DUNGEON_Y][DUNGEON_X];
   corridor_path_t non_tunnel_map[DUNGEON_Y][DUNGEON_X];
-  _pc player;
-  _npc *npc_arr;
+  _pc *player;
+  _npc **npc_arr;
 } _dungeon;
 
-
+int dungeon_init(_dungeon *d, uint8_t load, 
+   uint8_t save, char *rpath, char* spath,
+     uint8_t pc_loaded, pair_t pc_loc);
+uint8_t run_dungeon(_dungeon *d);
+void create_monsters(_dungeon *d);
 int mv_up_stairs(_dungeon *d);
 int mv_dwn_stairs(_dungeon *d);
-int end_game(_dungeon *d, int mode);
 int smooth_hardness(_dungeon *d);
 void empty_dungeon(_dungeon *d);
 int in_room(_dungeon *d, int16_t y, int16_t x);
 void make_rooms(_dungeon *d);
 void fill_rooms(_dungeon *d);
+int place_stairs(_dungeon *d);
 int create_cycle(_dungeon *d);
 void connect_rooms(_dungeon *d);
 void print(_dungeon *d);
@@ -135,9 +112,8 @@ int read_from_file(_dungeon *d, char *path);
 void save_to_file(_dungeon *d, char* path);
 void delete_dungeon(_dungeon *d);
 void init_dungeon(_dungeon *d, uint8_t load);
-uint8_t update_dungeon(_dungeon *d);
-int create_dungeon(_dungeon *d, uint8_t load, 
-   uint8_t save, char *rpath, char* spath,
-     uint8_t pc_loaded, pair_t pc_loc);
+int end_game(_dungeon *d, int mode);
+void mount_ncurses(void);
+void unmount_ncurses(void);
 
 #endif

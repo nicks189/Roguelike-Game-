@@ -1,4 +1,7 @@
 #include "pathfinding.h"
+#include "pc.h"
+#include "npc.h"
+#include "character.h"
 
 int32_t weigh_hardness(uint8_t h) {
   if(h < 85) {
@@ -287,7 +290,7 @@ void print_maps(_dungeon *d, uint8_t l) {
           putchar(' ');
         }
 
-        else if(x == d->player.x && y == d->player.y) {
+        else if(x == d->player->x && y == d->player->y) {
           putchar('@');
         }
 
@@ -302,7 +305,7 @@ void print_maps(_dungeon *d, uint8_t l) {
     for(y = 1; y < DUNGEON_Y - 1; y++) {
       for(x = 1; x < DUNGEON_X - 1; x++) {
 
-        if(x == d->player.x && y == d->player.y) {
+        if(x == d->player->x && y == d->player->y) {
           putchar('@');
         }
 
@@ -366,7 +369,7 @@ void dijkstra_corridor(_dungeon *d, pair_t from, pair_t to)
       for (x = to[dim_x], y = to[dim_y];
            (x != from[dim_x]) || (y != from[dim_y]);
            p = &path[y][x], x = p->from[dim_x], y = p->from[dim_y]) {
-        if (mapxy(x, y) != ter_floor_room && (x != d->player.x || y != d->player.y)) {
+        if (mapxy(x, y) != ter_floor_room && (x != d->player->x || y != d->player->y)) {
           mapxy(x, y) = ter_floor_hall;
           hardnessxy(x, y) = 0;
         }
