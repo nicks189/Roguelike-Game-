@@ -1,6 +1,0 @@
-3/02/17
- -- 1488659123 - npc stuck in the wall after 3 level changes, not clearing
-      entire char_arr? Likely should clear d->npc_arr as well.
- -- 1488679375 - weird crash after going down several levels, only happened once??
- -- 1488680203 - hangs with --nummon 120
-
