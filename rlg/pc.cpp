@@ -1,46 +1,51 @@
 #include "pc.h"
-#include "character_util.h"
 #include "pathfinding.h"
-#include "character.h"
-#include "npc.h"
+#include "dungeon.h"
 
-_pc *pc_init(_dungeon *d, uint8_t loaded, pair_t pc_loc) {
-  _pc *p;
-  if((p = malloc(sizeof(_pc)))) {
-    memset(p, 0, sizeof(_pc));
-    p->speed = 10;
-
-    if(loaded == 1) {
-      p->x = pc_loc[dim_x];
-      p->y = pc_loc[dim_y];
-    }
-    else {
-      p->x = rand_range(d->rooms[0].x + 1,
-                                 d->rooms[0].length - 1 + d->rooms[0].x);
-      p->y = rand_range(d->rooms[0].y + 1,
-                                 d->rooms[0].height - 1 + d->rooms[0].y);
-    }
-  }
-  return p;
+pc::pc(_dungeon *dun, int16_t *loc) {
+  d = dun;
+  trait = 0;
+  next[dim_x] = 0;
+  next[dim_y] = 0;
+  dead = 0;
+  symbol = '@';
+  speed = 10;
+  x = loc[dim_x];
+  y = loc[dim_y];
+  prev[dim_x] = x;
+  prev[dim_y] = y;
+  initMap();
+  updateMap();
 }
 
-void delete_pc(_pc *p) {
-  if(p) {
-    free(p);
-  } 
+pc::pc(_dungeon *dun) {
+  d = dun;
+  trait = 0;
+  speed = 10;
+  symbol = '@';
+  x = rand_range(d->rooms[0].x + 1,
+                             d->rooms[0].length - 1 + d->rooms[0].x);
+  y = rand_range(d->rooms[0].y + 1,
+                             d->rooms[0].height - 1 + d->rooms[0].y);
+  dead = 0;
+  next[dim_x] = 0;
+  next[dim_y] = 0;
+  prev[dim_x] = x;
+  prev[dim_y] = y;
+  initMap();
+  updateMap();
 }
 
-int move_pc(_dungeon *d, int32_t move) {
-  pair_t next;
+int pc::move(int move) {
   if((move == MV_UP_LEFT_1 || move == MV_UP_LEFT_2) && d->view_mode == CONTROL_MODE) {
-    next[dim_x] = d->player->x - 1;
-    next[dim_y] = d->player->y - 1;
+    next[dim_x] = x - 1;
+    next[dim_y] = y - 1;
   }
 
   else if(move == MV_UP_1 || move == MV_UP_2) {
     if(d->view_mode == CONTROL_MODE) {
-      next[dim_x] = d->player->x;
-      next[dim_y] = d->player->y - 1;
+      next[dim_x] = x;
+      next[dim_y] = y - 1;
     }
 
     else {
@@ -51,14 +56,14 @@ int move_pc(_dungeon *d, int32_t move) {
   }
 
   else if((move == MV_UP_RIGHT_1 || move == MV_UP_RIGHT_2) && d->view_mode == CONTROL_MODE) {
-    next[dim_x] = d->player->x + 1;
-    next[dim_y] = d->player->y - 1;
+    next[dim_x] = x + 1;
+    next[dim_y] = y - 1;
   }
 
   else if(move == MV_RIGHT_1 || move == MV_RIGHT_2) {
     if(d->view_mode == CONTROL_MODE) {
-      next[dim_x] = d->player->x + 1;
-      next[dim_y] = d->player->y;
+      next[dim_x] = x + 1;
+      next[dim_y] = y;
     }
 
     else {
@@ -69,14 +74,14 @@ int move_pc(_dungeon *d, int32_t move) {
   }
 
   else if((move == MV_DWN_RIGHT_1 || move == MV_DWN_RIGHT_2) && d->view_mode == CONTROL_MODE) {
-    next[dim_x] = d->player->x + 1;
-    next[dim_y] = d->player->y + 1;
+    next[dim_x] = x + 1;
+    next[dim_y] = y + 1;
   }
 
   else if(move == MV_DWN_1 || move == MV_DWN_2) {
     if(d->view_mode == CONTROL_MODE) {
-      next[dim_x] = d->player->x;
-      next[dim_y] = d->player->y + 1;
+      next[dim_x] = x;
+      next[dim_y] = y + 1;
     }
 
     else {
@@ -87,14 +92,14 @@ int move_pc(_dungeon *d, int32_t move) {
   }
 
   else if((move == MV_DWN_LEFT_1 || move == MV_DWN_LEFT_2) && d->view_mode == CONTROL_MODE) {
-    next[dim_x] = d->player->x - 1;
-    next[dim_y] = d->player->y + 1;
+    next[dim_x] = x - 1;
+    next[dim_y] = y + 1;
   }
 
   else if(move == MV_LEFT_1 || move == MV_LEFT_2) {
     if(d->view_mode == CONTROL_MODE) {
-      next[dim_x] = d->player->x - 1;
-      next[dim_y] = d->player->y;
+      next[dim_x] = x - 1;
+      next[dim_y] = y;
     }
 
     else {
@@ -105,8 +110,9 @@ int move_pc(_dungeon *d, int32_t move) {
   }
 
   else if((move == REST_1|| move == REST_2) && d->view_mode == CONTROL_MODE) {
-    next[dim_x] = d->player->x;
-    next[dim_y] = d->player->y;
+    next[dim_x] = x;
+    next[dim_y] = y;
+    return 0;
   }
 
   else if(move == MV_UP_STAIRS) {
@@ -131,8 +137,8 @@ int move_pc(_dungeon *d, int32_t move) {
   else if(move == CONTROL_MODE) {
     if(d->view_mode != CONTROL_MODE) {
       d->view_mode = CONTROL_MODE;
-      d->lcoords[dim_x] = d->player->x;
-      d->lcoords[dim_y] = d->player->y;
+      d->lcoords[dim_x] = x;
+      d->lcoords[dim_y] = y;
       print(d);
     }
     return 1;
@@ -147,15 +153,11 @@ int move_pc(_dungeon *d, int32_t move) {
   }
 
   if(hardnesspair(next) == 0) {
-    attack_pos(d, d->player->x, d->player->y, next, PC_MODE);
-    d->player->x = next[dim_x];
-    d->player->y = next[dim_y];
-    _npc m;
-    check_cur_room(d, &m, PC_MODE);
-    pathfinding(d, d->player->x, d->player->y, d->tunnel_map, TUNNEL_MODE);
-    pathfinding(d, d->player->x, d->player->y, d->non_tunnel_map, NON_TUNNEL_MODE);
-
-   return 0;
+    attackPos();
+    x = next[dim_x];
+    y = next[dim_y];
+    updateMap();
+    return 0;
   }
 
   else {
@@ -163,3 +165,20 @@ int move_pc(_dungeon *d, int32_t move) {
   }
 }
 
+void pc::updateMap() {
+  for(int j = y - 5; j < y + 6; j++) {
+    for(int i = x - 5; i < x + 6; i++) {
+      if(j < DUNGEON_Y && j >= 0 && i < DUNGEON_X && i >= 0) {
+        pcmap[j][i] = mapxy(i, j); 
+      }
+    }
+  }  
+}
+
+void pc::initMap() {
+  for(int j = 0; j < DUNGEON_Y; j++) {
+    for(int i = 0; i < DUNGEON_X; i++) {
+      pcmap[j][i] = ter_wall; 
+    }
+  } 
+}

@@ -12,14 +12,12 @@ typedef struct event {
   uint32_t time;
   enum event_type type;
   uint32_t sequence;
-  union {
-    _pc *pc;
-    _npc *npc;
-  } u;
+  character *c;
 } event_t;
 
-event_t *init_pc_event(_pc *p);
-event_t *init_npc_event(_npc *m, int event_sequence);
+int32_t event_cmp(const void *key, const void *with);
+event_t *init_pc_event(character *p);
+event_t *init_npc_event(character *m, int event_sequence);
 void delete_event(void *e);
 
 #endif

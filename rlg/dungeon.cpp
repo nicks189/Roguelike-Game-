@@ -1,13 +1,10 @@
 #include "dungeon.h"
-#include "npc.h"
-#include "pc.h"
 #include "pathfinding.h"
-#include "character_util.h"
-#include "character.h"
 #include "event.h"
 
 int dungeon_init(_dungeon *d, uint8_t load,
-   uint8_t save, char *rpath, char* spath, uint8_t pc_loaded, pair_t pc_loc) {
+                       uint8_t save, char *rpath, char* spath, 
+                       uint8_t pc_loaded, pair_t pc_loc) {
 
   if(load) {
     init_dungeon(d, load);
@@ -15,25 +12,37 @@ int dungeon_init(_dungeon *d, uint8_t load,
     fill_rooms(d);
     load_dungeon(d);
     place_stairs(d);
-    d->player = pc_init(d, pc_loaded, pc_loc);
-    pathfinding(d, d->player->x, d->player->y, d->tunnel_map, TUNNEL_MODE);
-    pathfinding(d, d->player->x, d->player->y, d->non_tunnel_map, NON_TUNNEL_MODE);
+    if(pc_loaded) {
+      d->player = new pc(d, pc_loc);
+    }
+    else {
+      d->player = new pc(d);
+    }
+    heap_insert(&d->event_heap, init_pc_event(d->player));
+    pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
+    pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
     create_monsters(d);
   }
 
   else {
     d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
-    d->rooms = malloc(sizeof(*d->rooms) * d->num_rooms);
-    d->npc_arr = malloc(sizeof(_npc) * d->nummon);
+    d->rooms = (room_t *) malloc(sizeof(*d->rooms) * d->num_rooms);
     pc_loaded = 0;
     init_dungeon(d, load);
     make_rooms(d);
     fill_rooms(d);
+    if(pc_loaded) {
+      d->player = new pc(d, pc_loc);
+    }
+    else {
+      d->player = new pc(d);
+    }
+    heap_insert(&d->event_heap, init_pc_event(d->player));
     connect_rooms(d);
     place_stairs(d);
-    d->player = pc_init(d, pc_loaded, pc_loc);
-    pathfinding(d, d->player->x, d->player->y, d->tunnel_map, TUNNEL_MODE);
-    pathfinding(d, d->player->x, d->player->y, d->non_tunnel_map, NON_TUNNEL_MODE);
+    d->player->updateMap(); 
+    pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
+    pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
     create_monsters(d);
   }
 
@@ -47,24 +56,13 @@ int dungeon_init(_dungeon *d, uint8_t load,
  * the game ends or user quits */
 uint8_t run_dungeon(_dungeon *d) {
   int32_t nxtcmd;
-  uint32_t i;
-  uint8_t initialized = 0;
   event_t *cur_node, *peek_node, *temp_node;
 
-  while(1) {
-    d->lcoords[dim_x] = d->player->x;
-    d->lcoords[dim_y] = d->player->y;
-    if(!initialized) {
-      heap_insert(&d->event_heap, init_pc_event(d->player));
-
-      for(i = 0; i < d->nummon; i++) {
-        heap_insert(&d->event_heap, init_npc_event(d->npc_arr[i], i));
-      }
-      initialized = 1;
-    }
-
+  while(true) {
+    d->lcoords[dim_x] = d->player->getX();
+    d->lcoords[dim_y] = d->player->getY();
     if(d->event_heap.size != 1) {
-      cur_node = heap_remove_min(&d->event_heap);
+      cur_node = (event_t *) heap_remove_min(&d->event_heap);
     }
 
     else {
@@ -73,10 +71,10 @@ uint8_t run_dungeon(_dungeon *d) {
       return end_game(d, PC_MODE);
     }
 
-    while((peek_node = heap_peek_min(&d->event_heap))) {
+    while((peek_node = (event_t *) heap_peek_min(&d->event_heap))) {
       if(peek_node->time == cur_node->time 
-          && peek_node->sequence < cur_node->sequence) {
-        temp_node = heap_remove_min(&d->event_heap);
+                         && peek_node->sequence < cur_node->sequence) {
+        temp_node = (event_t *) heap_remove_min(&d->event_heap);
         heap_insert(&d->event_heap, cur_node);
         cur_node = temp_node;
       }
@@ -87,8 +85,10 @@ uint8_t run_dungeon(_dungeon *d) {
 
     if(cur_node->type == pc_type) {
       print(d);
-      cur_node->time += (1000 / cur_node->u.pc->speed);
-      while(move_pc(d, nxtcmd = getch())) {
+      cur_node->time += (1000 / cur_node->c->getSpeed());
+      while(d->player->move(nxtcmd = getch())) {
+        pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
+        pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
         if(d->view_mode == LOOK_MODE) {
           print(d);
         }
@@ -97,9 +97,9 @@ uint8_t run_dungeon(_dungeon *d) {
     }
 
     else {
-      if(!cur_node->u.npc->dead) {
-        cur_node->time += (1000 / cur_node->u.npc->speed);
-        if(move_npc(d, cur_node->u.npc)) {
+      if(!(cur_node->c->isDead())) {
+        cur_node->time += (1000 / cur_node->c->getSpeed());
+        if(cur_node->c->move()) {
           heap_delete(&d->event_heap);
           return end_game(d, NPC_MODE);
         }
@@ -127,15 +127,17 @@ int gaussian[5][5] = {
 
 void create_monsters(_dungeon *d) {
   int i;
+  character *cp;
   for(i = 0; i < d->nummon; i++) {
-    d->npc_arr[i] = npc_init(d);
-    char_gridxy(d->npc_arr[i]->x, d->npc_arr[i]->y) = d->npc_arr[i];
+    cp = new npc(d);
+    char_gridxy(cp->getX(), cp->getX()) = cp;
+    heap_insert(&d->event_heap, init_npc_event(cp, i));
   } 
 }
 
 int mv_up_stairs(_dungeon *d) {
-  if(mapxy(d->player->x, d->player->y) == ter_stairs_up) {
-    d->seed = time(NULL);
+  if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_up) {
+    d->seed = time(nullptr);
     delete_dungeon(d);
     d->nummon = rand_range(18, 25);
     dungeon_init(d, 0, 0, 0, 0, 0, 0);
@@ -146,8 +148,8 @@ int mv_up_stairs(_dungeon *d) {
 }
 
 int mv_dwn_stairs(_dungeon *d) {
-  if(mapxy(d->player->x, d->player->y) == ter_stairs_down) {
-    d->seed = time(NULL);
+  if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_down) {
+    d->seed = time(nullptr);
     delete_dungeon(d);
     d->nummon = rand_range(18, 25);
     dungeon_init(d, 0, 0, 0, 0, 0, 0);
@@ -163,7 +165,7 @@ int smooth_hardness(_dungeon *d) {
   int32_t s, t, p, q;
   queue_node_t *head, *tail, *tmp;
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
-  tail = head = NULL;
+  tail = head = nullptr;
 
   memset(&hardness, 0, sizeof (hardness));
 
@@ -175,12 +177,12 @@ int smooth_hardness(_dungeon *d) {
     } while (hardness[y][x]);
     hardness[y][x] = i;
     if (i == 1) {
-      head = tail = malloc(sizeof (*tail));
+      head = tail = (queue_node_t *) malloc(sizeof (*tail));
     } else {
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
     }
-    tail->next = NULL;
+    tail->next = nullptr;
     tail->x = x;
     tail->y = y;
   }
@@ -193,65 +195,65 @@ int smooth_hardness(_dungeon *d) {
 
     if (x - 1 >= 0 && y - 1 >= 0 && !hardness[y - 1][x - 1]) {
       hardness[y - 1][x - 1] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x - 1;
       tail->y = y - 1;
     }
     if (x - 1 >= 0 && !hardness[y][x - 1]) {
       hardness[y][x - 1] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x - 1;
       tail->y = y;
     }
     if (x - 1 >= 0 && y + 1 < DUNGEON_Y && !hardness[y + 1][x - 1]) {
       hardness[y + 1][x - 1] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x - 1;
       tail->y = y + 1;
     }
     if (y - 1 >= 0 && !hardness[y - 1][x]) {
       hardness[y - 1][x] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x;
       tail->y = y - 1;
     }
     if (y + 1 < DUNGEON_Y && !hardness[y + 1][x]) {
       hardness[y + 1][x] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x;
       tail->y = y + 1;
     }
     if (x + 1 < DUNGEON_X && y - 1 >= 0 && !hardness[y - 1][x + 1]) {
       hardness[y - 1][x + 1] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x + 1;
       tail->y = y - 1;
     }
     if (x + 1 < DUNGEON_X && !hardness[y][x + 1]) {
       hardness[y][x + 1] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x + 1;
       tail->y = y;
     }
     if (x + 1 < DUNGEON_X && y + 1 < DUNGEON_Y && !hardness[y + 1][x + 1]) {
       hardness[y + 1][x + 1] = i;
-      tail->next = malloc(sizeof (*tail));
+      tail->next = (queue_node_t *) malloc(sizeof (*tail));
       tail = tail->next;
-      tail->next = NULL;
+      tail->next = nullptr;
       tail->x = x + 1;
       tail->y = y + 1;
     }
@@ -298,7 +300,6 @@ int smooth_hardness(_dungeon *d) {
 /* --from Dr Sheaffer-- */
 void empty_dungeon(_dungeon *d) {
   uint8_t x, y;
-
   smooth_hardness(d);
   for(y = 0; y < DUNGEON_Y; y++) {
     for(x = 0; x < DUNGEON_X; x++) {
@@ -315,7 +316,6 @@ void empty_dungeon(_dungeon *d) {
 int in_room(_dungeon *d, int16_t y, int16_t x)
 {
   int i;
-
   for (i = 0; i < d->num_rooms; i++) {
     if ((x >= d->rooms[i].x) &&
         (x < (d->rooms[i].y + d->rooms[i].length)) &&
@@ -324,15 +324,15 @@ int in_room(_dungeon *d, int16_t y, int16_t x)
           return 1;
     }
   }
-
   return 0;
 }
 
 void make_rooms(_dungeon *d) {
-  for(uint32_t i = 0; i < d->num_rooms; i++) {
+  int32_t i;
+  for(i = 0; i < d->num_rooms; i++) {
     while(1) {
       uint8_t bool_tmp = 1;
-      _room r = {rand_range(1, DUNGEON_X - 9), rand_range(1, DUNGEON_Y - 7),
+      room_t r = {rand_range(1, DUNGEON_X - 9), rand_range(1, DUNGEON_Y - 7),
            rand_range(ROOM_MIN_X, ROOM_MAX_X), rand_range(ROOM_MIN_Y, ROOM_MAX_Y)};
 
       /* end points of new room */
@@ -359,12 +359,14 @@ void make_rooms(_dungeon *d) {
         d->rooms[i] = r;
         break;
       }
-    } }
+    } 
+  }
 }
 
 /* fill rooms with "." */
 void fill_rooms(_dungeon *d) {
-  for(uint32_t i = 0; i < d->num_rooms; i++) {
+  int32_t i;
+  for(i = 0; i < d->num_rooms; i++) {
     uint8_t y1 = d->rooms[i].y;
     uint8_t x1 = d->rooms[i].x;
     uint8_t y2 = d->rooms[i].y + d->rooms[i].height;
@@ -421,7 +423,8 @@ int create_cycle(_dungeon *d)
 }
 
 void connect_rooms(_dungeon *d) {
-  for(uint32_t i = 0; i < d->num_rooms - 1; i++) {
+  int32_t i;
+  for(i = 0; i < d->num_rooms - 1; i++) {
     pair_t e1, e2;
 
     e1[dim_x] = rand_range(d->rooms[i].x, d->rooms[i].length - 1 + d->rooms[i].x);
@@ -430,17 +433,15 @@ void connect_rooms(_dungeon *d) {
     e2[dim_y] = rand_range(d->rooms[i+1].y, d->rooms[i+1].height - 1 + d->rooms[i+1].y);
 
     dijkstra_corridor(d, e1, e2);
-
   }
-
   create_cycle(d);
 }
 
 int place_stairs(_dungeon *d) {
   int xd1, xd2, yd1, yd2, xu1, xu2, xu3, yu1, yu2, yu3;
-  xd1 = rand_range(d->rooms[0].x + 1, d->rooms[0].length - 2 + d->rooms[0].x);
+  xd1 = rand_range(d->rooms[1].x + 1, d->rooms[1].length - 2 + d->rooms[1].x);
   xd2 = rand_range(d->rooms[2].x + 1, d->rooms[2].length - 2 + d->rooms[2].x);
-  yd1 = rand_range(d->rooms[0].y + 1, d->rooms[0].height - 2 + d->rooms[0].y);
+  yd1 = rand_range(d->rooms[1].y + 1, d->rooms[1].height - 2 + d->rooms[1].y);
   yd2 = rand_range(d->rooms[2].y + 1, d->rooms[2].height - 2 + d->rooms[2].y);
   xu1 = rand_range(d->rooms[3].x + 1, d->rooms[3].length - 2 + d->rooms[3].x);
   xu2 = rand_range(d->rooms[4].x + 1, d->rooms[4].length - 2 + d->rooms[4].x);
@@ -457,13 +458,19 @@ int place_stairs(_dungeon *d) {
   return 0;
 }
 
-/* --from Dr Sheaffer-- */
+inline uint8_t in_los_range(_dungeon *d, int x, int y) {
+  if(abs(x - d->player->getX()) <= 5 && 
+          (abs(y - d->player->getY()) <= 5)) {
+    return 1;
+  }
+  return 0;
+}
+
 void print(_dungeon *d) {
   clear();
-
   mvprintw(0, 0, "%ld", d->seed);
-  uint8_t x, y, x_l, y_l, x_h, y_h;
-  uint8_t px, py;
+  int16_t x, y, x_l, y_l, x_h, y_h;
+  int16_t px, py;
   px = 0;
   py = 1;
 
@@ -475,10 +482,10 @@ void print(_dungeon *d) {
   }
 
   else {
-    if(d->player->x >= 39) {
-      if(d->player->x <= DUNGEON_X - 41) {
-        x_l = d->player->x - 39;
-        x_h = d->player->x + 41;
+    if(d->player->getX() >= 39) {
+      if(d->player->getX() <= DUNGEON_X - 41) {
+        x_l = d->player->getX() - 39;
+        x_h = d->player->getX() + 41;
       }
 
       else {
@@ -492,10 +499,10 @@ void print(_dungeon *d) {
       x_h = 80;
     }
 
-    if(d->player->y >= 9) {
-      if(d->player->y <= DUNGEON_Y - 12) {
-        y_l = d->player->y - 9;
-        y_h = d->player->y + 12;
+    if(d->player->getY() >= 9) {
+      if(d->player->getY() <= DUNGEON_Y - 12) {
+        y_l = d->player->getY() - 9;
+        y_h = d->player->getY() + 12;
       }
 
       else {
@@ -509,26 +516,29 @@ void print(_dungeon *d) {
       y_h = 21;
     }
   }
-
-  mvprintw(0, 20, "PC at: (%d, %d)", d->player->x, d->player->y);
+  mvprintw(0, 20, "PC at: (%d, %d)", d->player->getX(), d->player->getY());
   mvprintw(0, 40, "viewing: (%d to %d) and (%d to %d)", x_l, x_h, y_l + 1, y_h);
 
   for(y = y_l; y < y_h; y++) {
     px = 0;
     for(x = x_l; x < x_h; x++) {
-
-      if(x == d->player->x && y == d->player->y) {
+      if(x == d->player->getX() && y == d->player->getY()) {
         mvaddch(py, px, '@' | COLOR_PAIR(3));
       }
 
-      else if(char_gridxy(x, y) != NULL && mapxy(x, y) != ter_wall_immutable) {
+      else if(char_gridxy(x, y) != nullptr && mapxy(x, y) != ter_wall_immutable
+                              /*&& in_los_range(d, x, y) */ 
+                              && !(char_gridxy(x, y)->isDead())) {
         attron(COLOR_PAIR(5));
-        mvprintw(py, px, "%c", (char_gridxy(x, y)->type));
+        mvprintw(py, px, "%c", char_gridxy(x, y)->getSymbol());
         attroff(COLOR_PAIR(5));
       }
 
       else {
-        switch(mapxy(x, y)) {
+        if(in_los_range(d, x, y)) {
+          attron(A_BOLD);
+        }
+        switch(/*d->player->pcmap[y][x]*/ mapxy(x, y)) {
           case ter_wall:
           case ter_wall_immutable:
             mvaddch(py, px, ' ' | COLOR_PAIR(7));
@@ -540,15 +550,18 @@ void print(_dungeon *d) {
           case ter_floor_hall:
             mvaddch(py, px, '#' | COLOR_PAIR(7));
             break;
-         case ter_stairs_down:
+          case ter_stairs_down:
             mvaddch(py, px, '>' | COLOR_PAIR(1));
             break;
-         case ter_stairs_up:
+          case ter_stairs_up:
             mvaddch(py, px, '<' | COLOR_PAIR(1));
             break;
-         case endgame_flag:
+          case endgame_flag:
             mvaddch(py, px, 'X');
             break;
+        }
+        if(in_los_range(d, x, y)) {
+          attroff(A_BOLD);
         }
       }
       px++;
@@ -608,7 +621,7 @@ int read_from_file(_dungeon *d, char *path) {
   uint32_t index = 0;
   while(fread(rooms_temp, sizeof(rooms_temp), 1, fp) == 1) {
     if(d->num_rooms >= MAX_ROOMS) {
-      d->rooms = realloc(d->rooms, sizeof(d->rooms) * d->num_rooms);
+      d->rooms = (room_t *) realloc(d->rooms, sizeof(d->rooms) * d->num_rooms);
     }
     d->rooms[index].x = rooms_temp[0];
     d->rooms[index].y = rooms_temp[1];
@@ -630,7 +643,7 @@ void save_to_file(_dungeon *d, char* path) {
   unsigned char f_marker[12] = {'R','L','G','3','2','7','-','S','2','0','1','7'};
   uint32_t f_version = 0;
   uint32_t f_size = 12 + 4 + 4 + 160 * 105 + 4 * d->num_rooms;
-  uint32_t i;
+  int32_t i;
 
   /* check endianess */
   int e_test = 1;
@@ -659,22 +672,25 @@ void save_to_file(_dungeon *d, char* path) {
 
 void delete_dungeon(_dungeon *d) {
   int i, j;
-  for(i = 0; i < d->nummon; i++) {
-    delete_npc(d->npc_arr[i]);
-  }
+  //for(i = 0; i < d->nummon; i++) {
+  //  delete d->npc_arr[i];
+  //}
   for(i = 0; i < d->num_rooms; i++) {
-    d->rooms[i].x = d->rooms[i].y = 0;
-    d->rooms[i].length = d->rooms[i].height = 0;
+    d->rooms[i].x = 0;
+    d->rooms[i].y = 0;
+    d->rooms[i].length = 0;
+    d->rooms[i].height = 0;
   }
   for(j = 0; j < DUNGEON_Y; j++) {
     for(i = 0; i < DUNGEON_X; i++) {
-      d->char_grid[j][i] = NULL;
+      if(d->char_grid[j][i] != nullptr) {
+        delete d->char_grid[j][i];
+      }
+      d->char_grid[j][i] = nullptr;
     }
   }
-
   heap_delete(&d->event_heap);
-  delete_pc(d->player);
-  free(d->npc_arr);
+  delete d->player;
   free(d->rooms);
 }
 
@@ -683,6 +699,12 @@ void init_dungeon(_dungeon *d, uint8_t load) {
   memset(&d->event_heap, 0, sizeof(d->event_heap));
   heap_init(&d->event_heap, event_cmp, delete_event);
   d->view_mode = CONTROL_MODE;
+  int xt, yt;
+  for(yt = 0; yt < DUNGEON_Y; yt++) {
+    for(xt = 0; xt < DUNGEON_X; xt++) {
+      char_gridxy(xt, yt) = nullptr;
+    }
+  }
   if(load) {
     uint8_t x, y;
     for(y = 0; y < DUNGEON_Y; y++) {

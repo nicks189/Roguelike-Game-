@@ -1,19 +1,19 @@
 #include "dungeon.h"
-#include "pathfinding.h"
-#include "character.h"
-#include "character_util.h"
-#include "pc.h"
-#include "npc.h"
 
 int main(int argc, char *argv[]) {
   _dungeon d;
   d.seed = time(NULL);
   uint8_t _load, _save, isn_empty, pc_loaded;
+  srand(d.seed);
   d.nummon = rand_range(18, 25);
   char file_name[255];
   pair_t pc_loc;
-  _load = _save = isn_empty = pc_loaded = 0;
-  pc_loc[dim_y] = pc_loc[dim_x] = 0;
+  _load = 0;
+  _save = 0;
+  isn_empty = 0;
+  pc_loaded = 0;
+  pc_loc[dim_y] = 0;
+  pc_loc[dim_x] = 0;
 
   /* handles command line args */
   if(argc > 10) {
