@@ -1,15 +1,14 @@
 #include "pc.h"
-#include "character_util.h"
 #include "pathfinding.h"
 #include "dungeon.h"
 
 pc::pc(_dungeon *dun, int16_t *loc) {
+  d = dun;
   trait = 0;
   next[dim_x] = 0;
   next[dim_y] = 0;
   dead = 0;
-  d = dun;
-  isPc = 1;
+  symbol = '@';
   speed = 10;
   x = loc[dim_x];
   y = loc[dim_y];
@@ -22,8 +21,8 @@ pc::pc(_dungeon *dun, int16_t *loc) {
 pc::pc(_dungeon *dun) {
   d = dun;
   trait = 0;
-  isPc = 1;
   speed = 10;
+  symbol = '@';
   x = rand_range(d->rooms[0].x + 1,
                              d->rooms[0].length - 1 + d->rooms[0].x);
   y = rand_range(d->rooms[0].y + 1,

@@ -6,7 +6,6 @@
 npc::npc(_dungeon *dun) {
   d = dun;
   srand(d->seed++);
-  isPc = 0;
   next[dim_x] = 0;
   next[dim_y] = 0;
   dead = 0;
@@ -15,7 +14,7 @@ npc::npc(_dungeon *dun) {
   search_dir = rand_range(0, 7);
   pc_lsp[dim_x] = 0;
   pc_lsp[dim_y] = 0;
-  type = 0;
+  symbol = 0;
   int tx, ty;
   do {
     int tempRoom = rand_range(1, d->num_rooms - 1); 
@@ -169,40 +168,40 @@ int npc::checkLos() {
 }
 
 inline int npc::isOpen(int xt, int yt) {
-  if(mapxy(xt, yt) == ter_floor_room 
-      && char_gridxy(xt, yt) == NULL) {
+  if((mapxy(xt, yt) == ter_floor_room || mapxy(xt, yt) == ter_floor_hall) 
+                  && char_gridxy(xt, yt) == nullptr) {
     if(trait == 15)
-      type = 'f';
+      symbol = 'f';
     else if(trait == 14)
-      type = 'e';
+      symbol = 'e';
     else if(trait == 13)
-      type = 'd';
+      symbol = 'd';
     else if(trait == 12)
-      type = 'c';
+      symbol = 'c';
     else if(trait == 11)
-      type = 'b';
+      symbol = 'b';
     else if(trait == 10)
-      type = 'a';
+      symbol = 'a';
     else if(trait == 9)
-      type = '9';
+      symbol = '9';
     else if(trait == 8)
-      type = '8';
+      symbol = '8';
     else if(trait == 7)
-      type = '7';
+      symbol = '7';
     else if(trait == 6)
-      type = '6';
+      symbol = '6';
     else if(trait == 5)
-      type = '5'; 
+      symbol = '5'; 
     else if(trait == 4)
-      type = '4';
+      symbol = '4';
     else if(trait == 3)
-      type = '3';
+      symbol = '3';
     else if(trait == 2)
-      type = '2';
+      symbol = '2';
     else if(trait == 1)
-      type = '1';
+      symbol = '1';
     else if(trait == 0)
-      type = '0';   
+      symbol = '0';   
     return 0;
   }
   return 1;      

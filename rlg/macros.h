@@ -117,7 +117,7 @@ extern "C" {
 })
 
 #  define free(ptr) ({                              \
-   typeof (ptr) _p = (ptr);                         \
+   __typeof__ (ptr) _p = (ptr);                         \
 /*   dfree(_p);*/                                   \
    free(_p);                                        \
 })
@@ -125,19 +125,19 @@ extern "C" {
 # endif /* __OPTIMIZE__ */
 
 # define swap(a, b) ({   \
-  typeof (a) _tmp = (a); \
+  __typeof__ (a) _tmp = (a); \
   (a) = (b);             \
   (b) = _tmp;            \
 })
 
 # define memswap(a, b) ({    \
-  typeof (*(a)) _tmp = *(a); \
+  __typeof__ (*(a)) _tmp = *(a); \
   *(a) = *(b);               \
   *(b) = _tmp;               \
 })
 
 # define structdup(s) ({                                                  \
-  typeof (s) _tmp;                                                        \
+  __typeof__ (s) _tmp;                                                        \
   _tmp = malloc(sizeof (*(s)));                                           \
   memcpy(_tmp, (s), sizeof (*(s)));                                       \
   _tmp;                                                                   \
@@ -154,15 +154,15 @@ extern "C" {
 
 # define max2(a, b)             \
          ({                     \
-	   typeof (a) _a = (a); \
-           typeof (b) _b = (b); \
+	   __typeof__ (a) _a = (a); \
+           __typeof__ (b) _b = (b); \
            (_a > _b) ? _a : _b; \
          })
 
 # define min2(a, b)             \
          ({                     \
-	   typeof (a) _a = (a); \
-           typeof (b) _b = (b); \
+	   __typeof__ (a) _a = (a); \
+           __typeof__ (b) _b = (b); \
            (_a < _b) ? _a : _b; \
          })
 

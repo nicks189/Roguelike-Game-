@@ -24,7 +24,6 @@ typedef struct dungeon _dungeon;
 
 class npc : public character {
   private:
-    char type;
     pair_t pc_lsp;
     int search_dir;
   public:
@@ -32,7 +31,6 @@ class npc : public character {
     virtual ~npc() {}
     void search();
     int move();
-    char getType() { return type; }
   protected:
     int searchHelper(int16_t *p);
     int checkLos();
