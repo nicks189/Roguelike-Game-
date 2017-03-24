@@ -1,6 +1,14 @@
 #include "event.h"
 
-event_t *init_pc_event(_pc *p) {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t event_cmp(const void *key, const void *with) {
+  return ((event_t *) key)->time - ((event_t *) with)->time;
+}
+
+event_t *init_pc_event(void *p) {
   event_t *e;
   if((e = malloc(sizeof(event_t)))) {
     memset(e, 0, sizeof(event_t));
@@ -10,7 +18,7 @@ event_t *init_pc_event(_pc *p) {
   return e;
 }
 
-event_t *init_npc_event(_npc *m, int event_sequence) {
+event_t *init_npc_event(void *m, int event_sequence) {
   event_t *e;
   if((e = malloc(sizeof(event_t)))) {
     memset(e, 0, sizeof(event_t));
@@ -22,8 +30,12 @@ event_t *init_npc_event(_npc *m, int event_sequence) {
 }
 
 void delete_event(void *e) {
-  event_t *event = e;
+  event_t *event = (event_t *) e;
   if(event) {
     free(event);
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

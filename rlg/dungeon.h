@@ -11,6 +11,15 @@
 #include <ncurses.h>
 
 #include "heap.h"
+#include "dimensions.h"
+#include "terrain.h"
+
+#ifdef __cplusplus
+#include "character.h"
+#include "npc.h"
+#include "pc.h"
+extern "C" {
+#endif
 
 /* --from Dr Sheaffer-- */
 #define DUNGEON_X 160
@@ -21,6 +30,8 @@
 #define ROOM_MIN_Y 5
 #define ROOM_MAX_X 20
 #define ROOM_MAX_Y 15
+#define PC_MODE 0
+#define NPC_MODE 1
 
 #define rand_range(min, max) ((rand() % (((max) + 1) - (min))) + (min))
 #define mapxy(x, y) (d->map[y][x])
@@ -38,8 +49,11 @@
 #define char_gridxy(x, y) (d->char_grid[y][x])
 #define char_gridpair(pair) (d->char_grid[pair[dim_y]][pair[dim_x]])
 
-typedef struct pc _pc;
-typedef struct npc _npc;
+#ifndef __cplusplus
+typedef void pc;
+typedef void npc;
+typedef void character;
+#endif
 
 /* --from Dr Sheaffer-- */ 
 typedef struct corridor_path {
@@ -48,27 +62,6 @@ typedef struct corridor_path {
   uint8_t from[2];
   int32_t cost;
 } corridor_path_t;
-
-/* --from Dr Sheaffer-- */
-typedef enum dim {
-  dim_x,
-  dim_y,
-  num_dims
-} dim_t;
-
-typedef int16_t pair_t[num_dims];
-
-/* --from Dr Sheaffer-- */
-typedef enum __attribute__ ((__packed__)) terrain_type {
-  ter_wall,
-  ter_wall_immutable,
-  ter_floor,
-  ter_floor_room,
-  ter_floor_hall,
-  ter_stairs_up,
-  ter_stairs_down,
-  endgame_flag
-} _terrain_type;
 
 typedef struct room {
   uint8_t x, y, length, height;
@@ -81,13 +74,13 @@ typedef struct dungeon {
   uint32_t num_rooms, nummon;
   long int seed; 
   _room *rooms;
-  _terrain_type map[DUNGEON_Y][DUNGEON_X];
-  _npc *char_grid[DUNGEON_Y][DUNGEON_X];
+  terrain_t map[DUNGEON_Y][DUNGEON_X];
+  character *char_grid[DUNGEON_Y][DUNGEON_X];
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   corridor_path_t tunnel_map[DUNGEON_Y][DUNGEON_X];
   corridor_path_t non_tunnel_map[DUNGEON_Y][DUNGEON_X];
-  _pc *player;
-  _npc **npc_arr;
+  pc *player;
+  npc **npc_arr;
 } _dungeon;
 
 int dungeon_init(_dungeon *d, uint8_t load, 
@@ -115,5 +108,9 @@ void init_dungeon(_dungeon *d, uint8_t load);
 int end_game(_dungeon *d, int mode);
 void mount_ncurses(void);
 void unmount_ncurses(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "dungeon.h"
 
 enum event_type {
@@ -13,13 +17,18 @@ typedef struct event {
   enum event_type type;
   uint32_t sequence;
   union {
-    _pc *pc;
-    _npc *npc;
+    void *pc;
+    void *npc;
   } u;
 } event_t;
 
-event_t *init_pc_event(_pc *p);
-event_t *init_npc_event(_npc *m, int event_sequence);
+int32_t event_cmp(const void *key, const void *with);
+event_t *init_pc_event(void *p);
+event_t *init_npc_event(void *m, int event_sequence);
 void delete_event(void *e);
+
+#ifdef __cplusplus 
+}
+#endif
 
 #endif
