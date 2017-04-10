@@ -1,38 +1,42 @@
-default: heap pathfinding character dungeon pc npc event rlg link
+CC = gcc
+CXX = g++
+ECHO = echo
+RM = rm -f
 
-OBJS = rlg.o dungeon.o event.o pc.o npc.o heap.o pathfinding.o character.o 
+CFLAGS = -Ofast -Wall -Werror -ggdb -pg -funroll-loops
+CXXFLAGS = -std=c++11 -Wall -Werror -Wno-narrowing -ggdb -funroll-loops
+LDFLAGS = -lncurses -pg
 
-link: $(OBJS) 
-	g++ -std=c++11 -ggdb -Wall -Werror character.o pathfinding.o event.o heap.o dungeon.o pc.o npc.o rlg.o -o rlg -lncurses 
+BIN = rlg
+OBJS = rlg.o heap.o dungeon.o pathfinding.o character.o event.o \
+       pc.o npc.o factory.o dice.o item.o display.o
 
-rlg: rlg.cpp
-	g++ -std=c++11 rlg.cpp -ggdb -Wall -Werror -c
+all: $(BIN) etags
 
-dungeon: dungeon.cpp
-	g++ -std=c++11 -Wno-narrowing dungeon.cpp -ggdb -Wall -Werror -c  
+$(BIN): $(OBJS)
+	@$(ECHO) Linking $@
+	@$(CXX) $^ -o $@ $(LDFLAGS)
 
-event: event.cpp
-	g++ -std=c++11 event.cpp -ggdb -Wall -Werror -c
+-include $(OBJS:.o=.d)
 
-pc: pc.cpp
-	g++ -std=c++11 pc.cpp -ggdb -Wall -Werror -c  	 
+%.o: %.c
+	@$(ECHO) Compiling $<
+	@$(CC) $(CFLAGS) -MMD -MF $*.d -c $<
 
-npc: npc.cpp
-	g++ -std=c++11 npc.cpp -ggdb -Wall -Werror -c  	 
+%.o: %.cpp
+	@$(ECHO) Compiling $<
+	@$(CXX) $(CXXFLAGS) -MMD -MF $*.d -c $<
 
-heap: heap.cpp
-	g++ -std=c++11 heap.cpp -ggdb -Wall -Werror -c  
-
-pathfinding: pathfinding.cpp
-	g++ -std=c++11 pathfinding.cpp -ggdb -Wall -Werror -c   
-
-character: character.cpp
-	g++ -std=c++11 character.cpp -ggdb -Wall -Werror -c  
-
-character_util: character_util.cpp
-	g++ -std=c++11 character_util.cpp -ggdb -Wall -Werror -c  
+.PHONY: all clean clobber etags
 
 clean:
-	rm -f dungeon.o heap.o pathfinding.o character.o npc.o pc.o event.o rlg.o rlg gmon.out valgrind.log *~
+	@$(ECHO) Removing all generated files
+	@$(RM) *.o $(BIN) *.d TAGS gmon.out core vgcore.* 
 
+clobber: clean
+	@$(ECHO) Removing backup files
+	@$(RM) *~ \#* *pgm
 
+etags:
+	@$(ECHO) Updating TAGS
+	@etags *.[ch]

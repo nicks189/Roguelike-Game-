@@ -1,61 +1,69 @@
+#include <vector>
+
 #include "dungeon.h"
 #include "pathfinding.h"
 #include "event.h"
+#include "factory.h"
 
-int dungeon_init(_dungeon *d, uint8_t load,
-                       uint8_t save, char *rpath, char* spath, 
-                       uint8_t pc_loaded, pair_t pc_loc) {
+using std::vector;
 
-  if(load) {
-    init_dungeon(d, load);
-    if(read_from_file(d, rpath)) return 1;
-    fill_rooms(d);
-    load_dungeon(d);
-    place_stairs(d);
-    if(pc_loaded) {
-      d->player = new pc(d, pc_loc);
-    }
-    else {
-      d->player = new pc(d);
-    }
-    heap_insert(&d->event_heap, init_pc_event(d->player));
-    pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
-    pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
-    create_monsters(d);
+int dungeon_init(_dungeon *d) { 
+  static int initialized = 0;
+  d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
+  d->rooms = (room_t *) malloc(sizeof(*d->rooms) * d->num_rooms);
+
+  init_dungeon(d, 0);
+
+  make_rooms(d);
+  fill_rooms(d);
+
+  if(!initialized) {
+    d->player = new pc(d);
   }
 
   else {
-    d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
-    d->rooms = (room_t *) malloc(sizeof(*d->rooms) * d->num_rooms);
-    pc_loaded = 0;
-    init_dungeon(d, load);
-    make_rooms(d);
-    fill_rooms(d);
-    if(pc_loaded) {
-      d->player = new pc(d, pc_loc);
-    }
-    else {
-      d->player = new pc(d);
-    }
-    heap_insert(&d->event_heap, init_pc_event(d->player));
-    connect_rooms(d);
-    place_stairs(d);
-    d->player->updateMap(); 
-    pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
-    pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
-    create_monsters(d);
+    d->player->place(d);  
   }
 
-  if(save) {
-    save_to_file(d, spath);
+  heap_insert(&d->event_heap, init_pc_event(d->player));
+
+  connect_rooms(d);
+  place_stairs(d);
+
+  pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
+  pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
+
+  create_monsters(d);
+  createItems(d);
+
+  d->player->updateMap(); 
+
+  if(d->level < 6) {
+    d->level_msg = "It's very dark... you wonder how you got here.";
   }
+
+  else if(d->level < 10) {
+    d->level_msg = "You begin to shiver from the cold."; 
+  }
+
+  else if(d->level < 15) {
+    d->level_msg = "You hear a strange noise...";
+  }
+
+  d->disp_msg = d->level_msg;
+
+  if(!initialized) {
+    d->display = new cursesDisplay(d);
+    d->display->displayMap();
+    initialized = 1;
+  }
+
   return 0;
 }
 
 /* refreshes dungeon and moves characters until 
  * the game ends or user quits */
 uint8_t run_dungeon(_dungeon *d) {
-  int32_t nxtcmd;
   event_t *cur_node, *peek_node, *temp_node;
 
   while(true) {
@@ -66,7 +74,7 @@ uint8_t run_dungeon(_dungeon *d) {
     }
 
     else {
-      print(d);
+      d->display->displayMap();
       heap_delete(&d->event_heap);
       return end_game(d, PC_MODE);
     }
@@ -84,15 +92,15 @@ uint8_t run_dungeon(_dungeon *d) {
     }
 
     if(cur_node->type == pc_type) {
-      print(d);
+      d->display->displayMap();
       cur_node->time += (1000 / cur_node->c->getSpeed());
-      while(d->player->move(nxtcmd = getch())) {
-        pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
-        pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
-        if(d->view_mode == LOOK_MODE) {
-          print(d);
-        }
+
+      /* __Make getting command independant__ */
+      while(d->player->move(getch())) {
+        d->display->displayMap();
       }
+      pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
+      pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
       heap_insert(&d->event_heap, cur_node);
     }
 
@@ -104,6 +112,9 @@ uint8_t run_dungeon(_dungeon *d) {
           return end_game(d, NPC_MODE);
         }
         heap_insert(&d->event_heap, cur_node);
+      }
+      else {
+        delete_event(cur_node);
       }
     }
   }
@@ -126,34 +137,119 @@ int gaussian[5][5] = {
 };
 
 void create_monsters(_dungeon *d) {
-  int i;
+  if(d->nummon == 0) {
+    d->nummon = 20;
+  }
+  int i = 0;
+
+  vector<character *> v;
+
   character *cp;
-  for(i = 0; i < d->nummon; i++) {
-    cp = new npc(d);
-    char_gridxy(cp->getX(), cp->getX()) = cp;
-    heap_insert(&d->event_heap, init_npc_event(cp, i));
-  } 
+  characterFactory *factory = new characterFactory(d);
+
+  /* Bad implementation but it assures monsters are random */
+  while((cp = (character *) factory->generateNext())) {
+    v.push_back(cp);
+  }
+
+  while(i < d->nummon) { 
+    npc *n = (npc *) v[rand_range(0, v.size() - 1)];
+    cp = new npc(*n); 
+
+    char_gridxy(cp->getX(), cp->getY()) = cp;
+    heap_insert(&d->event_heap, init_npc_event(cp, d->nummon));
+    i++;
+  }
+
+  while(v.size() != 0) {
+    cp = v.back();
+    delete cp;
+    v.pop_back();
+  }
+
+  delete factory;
+}
+
+void printMonster(character *cp) {
+  cout << endl;
+  cout << cp->getName() << endl;
+  cout << cp->getDesc() << endl;
+  cout << cp->getSymbol() << endl;
+  cout << "Color: " << cp->getColor() << endl;
+  cout << "Speed: " << cp->getSpeed() << endl;
+  cout << "Traits: " << cp->getTraits() << endl;
+  cout << "HP: " << cp->getHp() << endl;
+  dice *d = cp->getDamage();
+  cout << "Damage: " << d->toString() << endl;
+}
+
+void createItems(_dungeon *d) {
+  int i = 0;
+  if(d->numitems == 0) {
+    d->numitems = 20;
+  }
+
+  vector<item *> v;
+
+  item *ip;
+  itemFactory *factory = new itemFactory(d);
+
+  /* Bad implementation but it assures items are random */
+  while((ip = (item *) factory->generateNext())) {
+    v.push_back(ip);
+  }
+
+  while(i < d->numitems) { 
+    item *n = v[rand_range(0, v.size() - 1)];
+    ip = new item(*n); 
+    d->item_grid[ip->getY()][ip->getX()] = ip;
+    i++;
+  }
+
+  while(v.size() != 0) {
+    ip = v.back();
+    delete ip;
+    v.pop_back();
+  }
+
+  delete factory;
+}
+
+void printItem(item *ip) {
+  dice *d = ip->getDamage();
+  cout << endl;
+  cout << ip->getName() << endl;
+  cout << ip->getDesc() << endl;
+  cout << "Color: " << ip->getColor() << endl;
+  cout << "Hit bonus: " << ip->getHit() << endl;
+  cout << "Damage bonus: " << d->toString() << endl;
+  cout << "Dodge bonus: " << ip->getDodge() << endl;
+  cout << "Defense bonus: " << ip->getDefense() << endl;
+  cout << "Weight: " << ip->getWeight() << endl;
+  cout << "Speed bonus: " << ip->getSpeed() << endl;
+  cout << "Attribute: " << ip->getAttribute() << endl;
+  cout << "Value: " << ip->getValue() << endl;
 }
 
 int mv_up_stairs(_dungeon *d) {
+  d->level++;
   if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_up) {
-    d->seed = time(nullptr);
+    d->seed++;
     delete_dungeon(d);
-    d->nummon = rand_range(18, 25);
-    dungeon_init(d, 0, 0, 0, 0, 0, 0);
-    print(d);
+    dungeon_init(d);
+    d->display->displayMap();
     run_dungeon(d);
   }
   return 1;
 }
 
 int mv_dwn_stairs(_dungeon *d) {
+  d->level++;
   if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_down) {
-    d->seed = time(nullptr);
+    d->seed++;
     delete_dungeon(d);
-    d->nummon = rand_range(18, 25);
-    dungeon_init(d, 0, 0, 0, 0, 0, 0);
-    print(d);
+    dungeon_init(d);
+    d->display->displayMap();
     run_dungeon(d);
   }
   return 1;
@@ -459,120 +555,14 @@ int place_stairs(_dungeon *d) {
 }
 
 inline uint8_t in_los_range(_dungeon *d, int x, int y) {
-  if(abs(x - d->player->getX()) <= 5 && 
+  if(d->nofog) {
+    return 1;
+  }
+  else if(abs(x - d->player->getX()) <= 5 && 
           (abs(y - d->player->getY()) <= 5)) {
     return 1;
   }
   return 0;
-}
-
-void print(_dungeon *d) {
-  clear();
-  mvprintw(0, 0, "%ld", d->seed);
-  int16_t x, y, x_l, y_l, x_h, y_h;
-  int16_t px, py;
-  px = 0;
-  py = 1;
-
-  if(d->view_mode == LOOK_MODE) {
-    x_l = d->lcoords[dim_x] - 39;
-    x_h = d->lcoords[dim_x] + 41;
-    y_l = d->lcoords[dim_y] - 9;
-    y_h = d->lcoords[dim_y] + 12;
-  }
-
-  else {
-    if(d->player->getX() >= 39) {
-      if(d->player->getX() <= DUNGEON_X - 41) {
-        x_l = d->player->getX() - 39;
-        x_h = d->player->getX() + 41;
-      }
-
-      else {
-        x_h = DUNGEON_X;
-        x_l = 80;
-      }
-    }
-
-    else {
-      x_l = 0;
-      x_h = 80;
-    }
-
-    if(d->player->getY() >= 9) {
-      if(d->player->getY() <= DUNGEON_Y - 12) {
-        y_l = d->player->getY() - 9;
-        y_h = d->player->getY() + 12;
-      }
-
-      else {
-        y_h = DUNGEON_Y;
-        y_l = 84;
-      }
-    }
-
-    else {
-      y_l = 0;
-      y_h = 21;
-    }
-  }
-  mvprintw(0, 20, "PC at: (%d, %d)", d->player->getX(), d->player->getY());
-  mvprintw(0, 40, "viewing: (%d to %d) and (%d to %d)", x_l, x_h, y_l + 1, y_h);
-
-  for(y = y_l; y < y_h; y++) {
-    px = 0;
-    for(x = x_l; x < x_h; x++) {
-      if(x == d->player->getX() && y == d->player->getY()) {
-        mvaddch(py, px, '@' | COLOR_PAIR(3));
-      }
-
-      else if(char_gridxy(x, y) != nullptr && mapxy(x, y) != ter_wall_immutable
-                              /*&& in_los_range(d, x, y) */ 
-                              && !(char_gridxy(x, y)->isDead())) {
-        attron(COLOR_PAIR(5));
-        mvprintw(py, px, "%c", char_gridxy(x, y)->getSymbol());
-        attroff(COLOR_PAIR(5));
-      }
-
-      else {
-        if(in_los_range(d, x, y)) {
-          attron(A_BOLD);
-        }
-        switch(/*d->player->pcmap[y][x]*/ mapxy(x, y)) {
-          case ter_wall:
-          case ter_wall_immutable:
-            mvaddch(py, px, ' ' | COLOR_PAIR(7));
-            break;
-          case ter_floor:
-          case ter_floor_room:
-            mvaddch(py, px, '.' | COLOR_PAIR(7));
-            break;
-          case ter_floor_hall:
-            mvaddch(py, px, '#' | COLOR_PAIR(7));
-            break;
-          case ter_stairs_down:
-            mvaddch(py, px, '>' | COLOR_PAIR(1));
-            break;
-          case ter_stairs_up:
-            mvaddch(py, px, '<' | COLOR_PAIR(1));
-            break;
-          case endgame_flag:
-            mvaddch(py, px, 'X');
-            break;
-        }
-        if(in_los_range(d, x, y)) {
-          attroff(A_BOLD);
-        }
-      }
-      px++;
-    }
-    py++;
-    addch('\n');
-  }
-  attron(COLOR_PAIR(5));
-  mvprintw(23, 0, "HEALTH: 100");
-  attroff(COLOR_PAIR(5));
-  refresh();
 }
 
 /* fills grid from loaded file */
@@ -672,39 +662,41 @@ void save_to_file(_dungeon *d, char* path) {
 
 void delete_dungeon(_dungeon *d) {
   int i, j;
-  //for(i = 0; i < d->nummon; i++) {
-  //  delete d->npc_arr[i];
-  //}
+
   for(i = 0; i < d->num_rooms; i++) {
     d->rooms[i].x = 0;
     d->rooms[i].y = 0;
     d->rooms[i].length = 0;
     d->rooms[i].height = 0;
   }
+
+  for(j = 0; j < DUNGEON_Y; j++) {
+    for(i = 0; i < DUNGEON_X; i++) {
+      if(d->item_grid[j][i] != nullptr) {
+        delete d->item_grid[j][i];
+        d->item_grid[j][i] = nullptr;
+      }
+    }
+  }
+   
   for(j = 0; j < DUNGEON_Y; j++) {
     for(i = 0; i < DUNGEON_X; i++) {
       if(d->char_grid[j][i] != nullptr) {
-        delete d->char_grid[j][i];
+        d->char_grid[j][i] = nullptr;
       }
-      d->char_grid[j][i] = nullptr;
     }
   }
+
   heap_delete(&d->event_heap);
-  delete d->player;
+
   free(d->rooms);
+  d->rooms = nullptr;
 }
 
 void init_dungeon(_dungeon *d, uint8_t load) {
-  mount_ncurses();
   memset(&d->event_heap, 0, sizeof(d->event_heap));
   heap_init(&d->event_heap, event_cmp, delete_event);
   d->view_mode = CONTROL_MODE;
-  int xt, yt;
-  for(yt = 0; yt < DUNGEON_Y; yt++) {
-    for(xt = 0; xt < DUNGEON_X; xt++) {
-      char_gridxy(xt, yt) = nullptr;
-    }
-  }
   if(load) {
     uint8_t x, y;
     for(y = 0; y < DUNGEON_Y; y++) {
@@ -717,42 +709,15 @@ void init_dungeon(_dungeon *d, uint8_t load) {
 }
 
 int end_game(_dungeon *d, int mode) {
-  clear();
+  d->display->endGameScreen(mode);
   delete_dungeon(d);
 
-  if(mode == NPC_MODE) {
-    mvprintw(11, 31, "GAME OVER");
-  }
-  else if(mode == PC_MODE) {
-    mvprintw(11, 32, "YOU WIN!");
-  }
-  else {
-    mvprintw(11, 36, "QUIT");
-  }
+  delete d->player;
 
-  getch();
-  refresh();
-  unmount_ncurses();
+  delete d->display;
+  d->display = nullptr;
+
   exit(0);
   return 1;
 }
 
-void mount_ncurses(void) {
-  initscr();
-  raw();
-  noecho();
-  curs_set(0);
-  keypad(stdscr, true);
-  start_color();
-  init_pair(1, COLOR_RED,     COLOR_BLACK);
-  init_pair(2, COLOR_GREEN,   COLOR_BLACK);
-  init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
-  init_pair(4, COLOR_BLUE,    COLOR_BLACK);
-  init_pair(5, COLOR_CYAN,    COLOR_BLACK);
-  init_pair(6, COLOR_MAGENTA, COLOR_BLACK);
-  init_pair(7, COLOR_WHITE,   COLOR_BLACK);
-}
-
-void unmount_ncurses(void) {
-  endwin();
-}

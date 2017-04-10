@@ -1,6 +1,8 @@
 #ifndef DIMENSIONS_H
 #define DIMENSIONS_H
 
+#include <stdint.h>
+
 /* --from Dr Sheaffer-- */
 typedef enum dim {
   dim_x,

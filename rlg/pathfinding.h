@@ -3,12 +3,6 @@
 
 #include "dungeon.h"
 
-#ifndef __cplusplus
-typedef void pc;
-typedef void npc;
-typedef void character;
-#endif
-
 #define TUNNEL_MODE 0
 #define NON_TUNNEL_MODE 1
 #define BOTH_MODE 2

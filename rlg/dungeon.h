@@ -9,17 +9,18 @@
 #include <stdint.h>
 #include <limits.h>
 #include <ncurses.h>
+#include <string>
+#include <sstream>
 
 #include "heap.h"
 #include "dimensions.h"
 #include "terrain.h"
-
-//#ifdef __cplusplus
+#include "dice.h"
 #include "character.h"
+#include "item.h"
 #include "npc.h"
 #include "pc.h"
-//extern "C" {
-//#endif
+#include "display.h"
 
 /* --from Dr Sheaffer-- */
 #define DUNGEON_X 160
@@ -49,11 +50,8 @@
 #define char_gridxy(x, y) (d->char_grid[y][x])
 #define char_gridpair(pair) (d->char_grid[pair[dim_y]][pair[dim_x]])
 
-//#ifndef __cplusplus
-//typedef void pc;
-//typedef void npc;
-//typedef void character;
-//#endif
+using std::string;
+using std::stringstream;
 
 /* --from Dr Sheaffer-- */ 
 typedef struct corridor_path {
@@ -68,70 +66,52 @@ typedef struct room {
 } room_t;
 
 typedef struct dungeon {
+  dungeon() : char_grid(), item_grid() {}
+  bool nofog;
   heap_t event_heap;
   int16_t view_mode;
   pair_t lcoords;
-  int32_t num_rooms, nummon;
+  int num_rooms, nummon, numitems;
   long int seed; 
   room_t *rooms;
   terrain_t map[DUNGEON_Y][DUNGEON_X];
   character *char_grid[DUNGEON_Y][DUNGEON_X];
+  item *item_grid[DUNGEON_Y][DUNGEON_X];
   uint8_t hardness[DUNGEON_Y][DUNGEON_X];
   corridor_path_t tunnel_map[DUNGEON_Y][DUNGEON_X];
   corridor_path_t non_tunnel_map[DUNGEON_Y][DUNGEON_X];
   pc *player;
+  string disp_msg;
+  string level_msg;
+  int level;
+  abstractDisplay *display;
 } _dungeon;
 
-int dungeon_init(_dungeon *d, uint8_t load, 
-              uint8_t save, char *rpath, char* spath,
-              uint8_t pc_loaded, pair_t pc_loc);
-
+int dungeon_init(_dungeon *d);  
+void printMonster(character *cp);
+void printItems(item *ip);
 uint8_t run_dungeon(_dungeon *d);
-
 void create_monsters(_dungeon *d);
-
+void createItems(_dungeon *d);
 int mv_up_stairs(_dungeon *d);
-
 int mv_dwn_stairs(_dungeon *d);
-
 int smooth_hardness(_dungeon *d);
-
 void empty_dungeon(_dungeon *d);
-
 int in_room(_dungeon *d, int16_t y, int16_t x);
-
 void make_rooms(_dungeon *d);
-
 void fill_rooms(_dungeon *d);
-
 int place_stairs(_dungeon *d);
-
 int create_cycle(_dungeon *d);
-
 void connect_rooms(_dungeon *d);
-
 void print(_dungeon *d);
-
 void load_dungeon(_dungeon *d);
-
 int in_room(_dungeon *d, int16_t y, int16_t x);
-
 int read_from_file(_dungeon *d, char *path);
-
 void save_to_file(_dungeon *d, char* path);
-
 void delete_dungeon(_dungeon *d);
-
 void init_dungeon(_dungeon *d, uint8_t load);
-
 int end_game(_dungeon *d, int mode);
-
 void mount_ncurses(void);
-
 void unmount_ncurses(void);
-
-//#ifdef __cplusplus
-//}
-//#endif
 
 #endif

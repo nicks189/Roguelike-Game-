@@ -28,6 +28,11 @@ event_t *init_npc_event(character *m, int event_sequence) {
 void delete_event(void *e) {
   event_t *event = (event_t *) e;
   if(event) {
+    character *c = event->c;
+    if(c && c->getSymbol() != '@') {
+      delete c;
+    }
+    event->c = nullptr;
     free(event);
   }
 }
