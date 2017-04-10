@@ -3,31 +3,93 @@
 #include "character.h"
 #include "dungeon.h"
 
-npc::npc(_dungeon *dun) {
-  d = dun;
-  srand(d->seed++);
-  next[dim_x] = 0;
-  next[dim_y] = 0;
-  dead = 0;
-  speed = rand_range(5, 20);
-  trait = rand_range(0, 15);
+npc::npc(_dungeon *dun) : character(dun) {
   search_dir = rand_range(0, 7);
-  pc_lsp[dim_x] = 0;
-  pc_lsp[dim_y] = 0;
-  symbol = 0;
-  int tx, ty;
+  int tx, ty, tempRoom;
   do {
-    int tempRoom = rand_range(1, d->num_rooms - 1); 
+
+    tempRoom = rand_range(1, d->num_rooms - 1); 
+
     tx = rand_range(d->rooms[tempRoom].x + 1,
          d->rooms[tempRoom].length - 2 + d->rooms[tempRoom].x);
+
     ty = rand_range(d->rooms[tempRoom].y + 1, 
          d->rooms[tempRoom].height - 2 + d->rooms[tempRoom].y);
-  } while(isOpen(tx, ty));
+
+  } while(!isOpen(tx, ty));
   
   x = tx;
   y = ty;
   prev[dim_x] = x;
   prev[dim_y] = y;
+  pc_lsp[dim_x] = 0;
+  pc_lsp[dim_y] = 0;
+}
+
+npc::npc(npc &n) : character(n.d) {
+  search_dir = rand_range(0, 7);
+  name = n.name;
+  description = n.description;
+  damage = new dice(); 
+  damage->setBase(n.damage->getBase());
+  damage->setNumber(n.damage->getNumber());
+  damage->setSides(n.damage->getSides());
+  hp = n.hp;
+  color = n.color;
+  traits = n.traits;
+  speed = n.speed;
+  dead = n.dead;
+  symbol = n.symbol;
+
+  int tx, ty, tempRoom;
+  do {
+
+    tempRoom = rand_range(1, d->num_rooms - 1); 
+
+    tx = rand_range(d->rooms[tempRoom].x + 1,
+         d->rooms[tempRoom].length - 2 + d->rooms[tempRoom].x);
+
+    ty = rand_range(d->rooms[tempRoom].y + 1, 
+         d->rooms[tempRoom].height - 2 + d->rooms[tempRoom].y);
+
+  } while(!isOpen(tx, ty));
+  
+  x = tx;
+  y = ty;
+  prev[dim_x] = x;
+  prev[dim_y] = y;
+  pc_lsp[dim_x] = 0;
+  pc_lsp[dim_y] = 0;
+}
+
+int npc::attackPos() {
+  character *c = char_gridpair(next);
+
+  if(next[dim_x] == d->player->getX() && next[dim_y] == d->player->getY())  {
+    int dmg = damage->roll();
+
+    d->disp_msg = "";
+    d->disp_msg.append(name);
+    d->disp_msg.append(" hit you for ");
+    d->disp_msg.append(std::to_string(dmg));
+    d->player->setHp(d->player->getHp() - dmg);
+
+    if(d->player->getHp() < 1) {
+      d->disp_msg.append(". Everything goes dark...");
+      return end_game(d, NPC_MODE);
+    }
+    next[dim_x] = x;
+    next[dim_y] = y;
+  }
+
+  if(c != nullptr && this != c) {     
+    c->setX(x);
+    c->setY(y);
+  }
+
+  char_gridxy(x, y) = c;
+
+  return 0;
 }
 
 int npc::searchHelper(int16_t *p) {
@@ -167,44 +229,20 @@ int npc::checkLos() {
   }
 }
 
-inline int npc::isOpen(int xt, int yt) {
-  if((mapxy(xt, yt) == ter_floor_room || mapxy(xt, yt) == ter_floor_hall) 
-                  && char_gridxy(xt, yt) == nullptr) {
-    if(trait == 15)
-      symbol = 'f';
-    else if(trait == 14)
-      symbol = 'e';
-    else if(trait == 13)
-      symbol = 'd';
-    else if(trait == 12)
-      symbol = 'c';
-    else if(trait == 11)
-      symbol = 'b';
-    else if(trait == 10)
-      symbol = 'a';
-    else if(trait == 9)
-      symbol = '9';
-    else if(trait == 8)
-      symbol = '8';
-    else if(trait == 7)
-      symbol = '7';
-    else if(trait == 6)
-      symbol = '6';
-    else if(trait == 5)
-      symbol = '5'; 
-    else if(trait == 4)
-      symbol = '4';
-    else if(trait == 3)
-      symbol = '3';
-    else if(trait == 2)
-      symbol = '2';
-    else if(trait == 1)
-      symbol = '1';
-    else if(trait == 0)
-      symbol = '0';   
-    return 0;
+int npc::isOpen(int xt, int yt) {
+  if(mapxy(xt, yt) == ter_floor_room && char_gridxy(xt, yt) == nullptr) {
+    return 1;
   }
-  return 1;      
+  return 0;      
+}
+
+inline bool npc::checkShortestPath(int16_t *pos, bool pcLos) {
+  /* TODO */
+  if(pcLos != 1) {
+    return true;
+  } 
+  
+  return false;
 }
 
 /* Here there be monsters (as in really crappy code)
@@ -212,22 +250,22 @@ inline int npc::isOpen(int xt, int yt) {
 int npc::move() {
   int x_l, x_h, y_l, y_h;
   int tx, ty;
+
   x_l = x - 1;
   x_h = x + 1;
   y_l = y - 1;
   y_h = y + 1;
+
   tx = x;
   ty = y;
 
   next[dim_x] = x;
   next[dim_y] = y;
 
-  /* monster has no traits */
-
   /* check if Erratic */
-  if(trait & NPC_ERRATIC && ((rand() % 2) == 1)) {
+  if(traits & NPC_ERRATIC && ((rand() % 2) == 1)) {
 
-    if(trait & NPC_TUNNEL) {
+    if(traits & NPC_TUNNEL) {
       findRandNeighbor();
       attackPos();
 
@@ -250,7 +288,7 @@ int npc::move() {
           pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
         }
 
-        char_gridxy(x, y) = nullptr;
+        
         prev[dim_x] = x;
         prev[dim_y] = y;
         x = next[dim_x];
@@ -263,7 +301,7 @@ int npc::move() {
       findRandNeighbor();
       attackPos();
 
-      char_gridxy(x, y) = nullptr;
+      
       prev[dim_x] = x;
       prev[dim_y] = y;
       x = next[dim_x];
@@ -271,20 +309,17 @@ int npc::move() {
       char_gridpair(next) = this;
     }
 
-    //check_cur_room(d, this, NPC_MODE);
-
     return 0;
-
   }
 
   /* Smart monsters */
-  if(trait & NPC_SMART) {
+  if(traits & NPC_SMART) {
 
     /* Smart Telepathic monsters */
-    if(trait & NPC_TELEPATH) {
+    if(traits & NPC_TELEPATH) {
 
       /* Smart Telepathic Tunneling monsters */
-      if(trait & NPC_TUNNEL) {
+      if(traits & NPC_TUNNEL) {
         for(tx = x_l; tx <= x_h; tx++) {
           for(ty = y_l; ty <= y_h; ty++) {
             if(tx != x || ty != y) {
@@ -295,8 +330,6 @@ int npc::move() {
             }
           }
         }
-        //x = tx;
-        //y = ty;
 
         attackPos(); 
 
@@ -319,7 +352,7 @@ int npc::move() {
             pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
           }
 
-          char_gridxy(x, y) = nullptr;
+          
           prev[dim_x] = x;
           prev[dim_y] = y;
           x = next[dim_x];
@@ -340,10 +373,8 @@ int npc::move() {
             }
           }
         }
-        //x = tx;
-        //y = ty;
         attackPos();
-        char_gridxy(x, y) = nullptr;
+        
         prev[dim_x] = x;
         prev[dim_y] = y;
         x = next[dim_x];
@@ -356,7 +387,7 @@ int npc::move() {
     else {
 
       /*Smart Non-Telepathic Non-Tunneling monsters */
-      if(!(trait & NPC_TUNNEL)) {
+      if(!(traits & NPC_TUNNEL)) {
         /* If pc is in LoS */
         if(checkLos()) {
           for(tx = x_l; tx <= x_h; tx++) {
@@ -371,10 +402,8 @@ int npc::move() {
           }
           pc_lsp[dim_y] = d->player->getY();
           pc_lsp[dim_x] = d->player->getX();
-          //x = tx;
-          //y = ty;
         }
-
+         
         /* If pc is not in LoS and has a LSP */
         else if(!(pc_lsp[dim_y] == 0)) {
           if(pc_lsp[dim_x] < x) {
@@ -432,7 +461,7 @@ int npc::move() {
         }
         attackPos();
 
-        char_gridxy(x, y) = nullptr;
+        
         prev[dim_x] = x;
         prev[dim_y] = y;
         x = next[dim_x];
@@ -532,7 +561,7 @@ int npc::move() {
           }
 
           //check_cur_room(d, mon, NPC_MODE);
-          char_gridxy(x, y) = nullptr;
+          
           prev[dim_x] = x;
           prev[dim_y] = y;
           x = next[dim_x];
@@ -546,10 +575,10 @@ int npc::move() {
   /* Non Smart monsters */
   else {
     /* Non-Smart Telepathic monsters */
-    if(trait & NPC_TELEPATH) {
+    if(traits & NPC_TELEPATH) {
 
       /* Non-Smart Telepathic Tunneling monsters */
-      if(trait & NPC_TUNNEL) {
+      if(traits & NPC_TUNNEL) {
 
         if(d->player->getX() < x) {
           if(d->player->getY() < y) {
@@ -615,7 +644,6 @@ int npc::move() {
             pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
           }
 
-          char_gridxy(x, y) = nullptr;
           prev[dim_x] = x;
           prev[dim_y] = y;
           x = next[dim_x];
@@ -673,7 +701,7 @@ int npc::move() {
         }
         attackPos();
 
-        char_gridxy(x, y) = nullptr;
+        
         prev[dim_x] = x;
         prev[dim_y] = y;
         x = next[dim_x];
@@ -686,7 +714,7 @@ int npc::move() {
     else {
 
       /* Non-Smart Non-Telepathic Tunneling monsters */
-      if(trait & NPC_TUNNEL) {
+      if(traits & NPC_TUNNEL) {
         if(checkLos()) {
           if(d->player->getX() < x) {
             if(d->player->getY() < y) {
@@ -759,7 +787,7 @@ int npc::move() {
           }
 
           //check_cur_room(d, mon, NPC_MODE);
-          char_gridxy(x, y) = nullptr;
+          
           prev[dim_x] = x;
           prev[dim_y] = y;
           x = next[dim_x];
@@ -824,7 +852,7 @@ int npc::move() {
         attackPos();
 
         //check_cur_room(d, mon, NPC_MODE);
-        char_gridxy(x, y) = nullptr;
+        
         prev[dim_x] = x;
         prev[dim_y] = y;
         x = next[dim_x];

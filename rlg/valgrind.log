@@ -1,0 +1,36 @@
+==3853== Memcheck, a memory error detector
+==3853== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==3853== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==3853== Command: ./rlg --nofog --items 150
+==3853== Parent PID: 32534
+==3853== 
+==3853== 
+==3853== Process terminating with default action of signal 27 (SIGPROF)
+==3853==    at 0x592521F: write_gmon (gmon.c:354)
+==3853==    by 0x5925999: _mcleanup (gmon.c:422)
+==3853==    by 0x5856FF7: __run_exit_handlers (exit.c:82)
+==3853==    by 0x5857044: exit (exit.c:104)
+==3853==    by 0x408188: end_game(dungeon*, int) (dungeon.cpp:720)
+==3853==    by 0x410464: pc::move(int) (pc.cpp:588)
+==3853==    by 0x404BD6: run_dungeon(dungeon*) (dungeon.cpp:99)
+==3853==    by 0x40583D: mv_up_stairs(dungeon*) (dungeon.cpp:241)
+==3853==    by 0x4102EA: pc::move(int) (pc.cpp:559)
+==3853==    by 0x404BD6: run_dungeon(dungeon*) (dungeon.cpp:99)
+==3853==    by 0x405920: mv_dwn_stairs(dungeon*) (dungeon.cpp:253)
+==3853==    by 0x410305: pc::move(int) (pc.cpp:563)
+==3853== 
+==3853== HEAP SUMMARY:
+==3853==     in use at exit: 336,353 bytes in 340 blocks
+==3853==   total heap usage: 3,863,283 allocs, 3,862,943 frees, 184,477,775 bytes allocated
+==3853== 
+==3853== LEAK SUMMARY:
+==3853==    definitely lost: 0 bytes in 0 blocks
+==3853==    indirectly lost: 0 bytes in 0 blocks
+==3853==      possibly lost: 0 bytes in 0 blocks
+==3853==    still reachable: 336,353 bytes in 340 blocks
+==3853==         suppressed: 0 bytes in 0 blocks
+==3853== Reachable blocks (those to which a pointer was found) are not shown.
+==3853== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==3853== 
+==3853== For counts of detected and suppressed errors, rerun with: -v
+==3853== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

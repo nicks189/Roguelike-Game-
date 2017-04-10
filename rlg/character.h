@@ -2,71 +2,93 @@
 #define CHARACTER_H
 
 #include <stdint.h>
+#include <string>
 
 #include "dimensions.h"
+#include "dice.h"
 
 #define BAD_ROOM 3063
 
-/* controls */
-#define MV_UP_LEFT_1 067 
-#define MV_UP_LEFT_2 0171 
-#define MV_UP_1 070
-#define MV_UP_2 0153 
-#define MV_UP_RIGHT_1 071
-#define MV_UP_RIGHT_2 0165 
-#define MV_RIGHT_1 066
-#define MV_RIGHT_2 0154 
-#define MV_DWN_RIGHT_1 063
-#define MV_DWN_RIGHT_2 0156 
-#define MV_DWN_1 062
-#define MV_DWN_2 0152
-#define MV_DWN_LEFT_1 061
-#define MV_DWN_LEFT_2 0142 
-#define MV_LEFT_1 064
-#define MV_LEFT_2 0150 
-#define REST_1 065
-#define REST_2 040 
-#define MV_UP_STAIRS 074
-#define MV_DWN_STAIRS 076
-#define LOOK_MODE 0114
-#define CONTROL_MODE 033
-#define QUIT_GAME 0121
-
-
 typedef struct dungeon _dungeon;
+
+using std::string;
 
 class character {
   protected:
+    /* 
+     * __TODO__ 
+     * Handle multi-color  
+     *
+     */
+    _dungeon *d;
+    string name;
+    string description;
+    dice *damage;
+    int hp;
+    int maxhp;
+    int color;
     int x, y;
-    int trait;
-    int *color;
-    char **description;
+    int traits;
+    int hit;
+    int dodge;
     int speed;
     int dead;
     char symbol;
     pair_t next;
     pair_t prev;
-    _dungeon *d;
-    int attackPos();
+    /*                               *
+     * Protected member functions    *
+     *                               */
+    virtual int attackPos() = 0;
     int check_los() { return 0; }
     int findRandNeighbor();
+
   public:
-    character(); 
     character(_dungeon *dun);
-    virtual ~character() {}
-    virtual int move() = 0;
+    virtual ~character() {
+      if(damage) {
+        delete damage;
+        damage = nullptr;
+      }
+    }
+    /*                     * 
+     * Getters and setters * 
+     *                     */
+    string getDesc() { return description; }
+    string getName() { return name; }
+    int getColor() { return color; }
+    int getHp() { return hp; }
+    int getMaxHp() { return maxhp; }
+    dice *getDamage() { return damage; }
     char getSymbol() { return symbol; }
     int getX() { return x; }
     int getY() { return y; }
+    int getHit() { return hit; }
+    int getDodge() { return dodge; }
+    int getSpeed() { return speed; }
+    int getTraits() { return traits; }
+    int8_t isDead() { return dead; }
+    void setDesc(string d) { description = d; } 
+    void setName(string d) { name = d; } 
+    void setColor(int d) { color = d; } 
+    void setHp(int d) { hp = d; } 
+    void setMaxHp(int d) { maxhp = d; }
+    void setDamage(dice *d) { damage = d; }
+    void setSymbol(char d) { symbol = d; }
     void setX(int t) { x = t; }
     void setY(int t) { y = t; } 
+    void setHit(int t) { hit = t; }
+    void setDodge(int t) { dodge = t; }
+    void setSpeed(int d) { speed = d; }
+    void setTraits(int d) { traits = d; }
     void kill() { dead = 1; }
-    int getSpeed() { return speed; }
-    _dungeon *getDungeon() { return d; }
+    /*                        * 
+     * Other member functions *
+     *                        */
+    virtual int move() = 0;
     int getRoom();
-    int8_t isDead() { return dead; }
+    _dungeon *getDungeon() { return d; }
     int16_t *getNext() { return next; }
-    int getTrait() { return trait; }
     int getPrevX() { return prev[dim_x]; }
     int getPrevY() { return prev[dim_y]; }
 };

@@ -1,8 +1,8 @@
 ########## README ##########
 
-Game now uses both c and c++ files, complied seperately and linked. Character, npc, and pc files are now entirely
-in c++. Character_util.cpp/h acts as mediator between c and c++ files; c files pass void pointers to character_util
-functions which call c++ methods/constructors/etc and return void points/useful data. Fog of war is now also 
-implemented; everything in view is in bold while remembered terrain is not. Monsters are only viewable within 5 
-cells - not on remembered terrain. 
+Items and monsters are now parsed from respective files and randomly loaded
+into the dungeon. 20 monsters and 20 items are loaded by default, number of
+monsters can be increased with --nummon. Fog of war can now also  be disable 
+with --nofog or -g switches. 
+
 

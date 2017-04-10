@@ -425,6 +425,7 @@ void dijkstra_corridor(_dungeon *d, pair_t from, pair_t to)
       heap_decrease_key_no_replace(&h, path[p->pos[dim_y] + 1]
                                            [p->pos[dim_x]    ].hn);
     }
+    p = nullptr;
   }
 }
 
@@ -526,6 +527,7 @@ void dijkstra_corridor_inv(_dungeon *d, pair_t from, pair_t to)
       heap_decrease_key_no_replace(&h, path[p->pos[dim_y] + 1]
                                            [p->pos[dim_x]    ].hn);
     }
+    p = nullptr;
   }
 }
 

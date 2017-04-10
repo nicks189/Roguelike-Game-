@@ -72,3 +72,21 @@ v1.06 ------
 3/19/2017 - Finished character_util files, everything now compiles and runs correctly
 3/20/2017 - Added fog of war -- new terrain map is stored in pc class and accessed through character_util
 3/22/2017 - Visible terrain is now bolded, remembered terrain is not
+
+v1.07 ------
+3/23/2017 - Converted remaining c files to c++
+3/25/2017 - Created characterFactory to use stringstream objects to instantiate npcs -- for now all monsters are 
+              being discarded.
+3/27/2017 - Added temporary string fields in character.h to hold parsed information -- will change 
+3/28/2017 - Added error checking -- monsters are discarded if incorrect input is given 
+
+v1.08 -----
+3/29/2017 - Fixed file mismath error - mistyped file name
+3/29/2017 - Dice stats are now parsed as dice rather than strings
+3/29/2017 - Monsters are now instantiated and placed in dungeon
+3/31/2017 - Monsters traits are now correctly parsed
+4/02/2017 - Created item class
+4/02/2017 - Items now parsed from object_desc.txt
+4/04/2017 - Items now loaded into dungeon
+4/05/2017 - 20 items and monster are now randomly loaded - was loading 
+              from files only once.
