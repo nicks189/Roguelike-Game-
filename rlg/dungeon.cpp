@@ -6,9 +6,19 @@
 #include "factory.h"
 
 using std::vector;
+using std::stringstream;
 
 int dungeon_init(_dungeon *d) { 
   static int initialized = 0;
+  srand(d->seed);
+
+  if(d->level == 2) {
+    string path = getenv("HOME");
+    path.append("/.rlg327/boss01.rlg327");
+    dungeon_init_load(d, path.c_str());
+    return 0;
+  }
+
   d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
   d->rooms = (room_t *) malloc(sizeof(*d->rooms) * d->num_rooms);
 
@@ -19,6 +29,8 @@ int dungeon_init(_dungeon *d) {
 
   if(!initialized) {
     d->player = new pc(d);
+    setupDisplay(d);
+    initialized = 1;
   }
 
   else {
@@ -41,22 +53,58 @@ int dungeon_init(_dungeon *d) {
   if(d->level < 6) {
     d->level_msg = "It's very dark... you wonder how you got here.";
   }
-
   else if(d->level < 10) {
     d->level_msg = "You begin to shiver from the cold."; 
   }
-
   else if(d->level < 15) {
     d->level_msg = "You hear a strange noise...";
   }
 
   d->disp_msg = d->level_msg;
 
-  if(!initialized) {
-    d->display = new cursesDisplay(d);
-    d->display->displayMap();
-    initialized = 1;
+  d->display->displayMap();
+
+  return 0;
+}
+
+int dungeon_init_load(_dungeon *d, const char *path) {
+  init_dungeon(d, 0);
+
+  d->rooms = (room_t *) malloc(sizeof(*d->rooms) * MAX_ROOMS);
+
+  if(read_from_file(d, path)) {
+    return 1;
   }
+  
+  fill_rooms(d);
+  load_dungeon(d);
+  place_stairs(d);
+
+  d->player->place(d);  
+  heap_insert(&d->event_heap, init_pc_event(d->player));
+
+
+  pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
+  pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
+
+  create_monsters(d);
+  createItems(d);
+
+  d->player->updateMap(); 
+
+  if(d->level != 6) {
+    d->level_msg = "It's very dark... you wonder how you got here.";
+  }
+  //else if(d->level < 6) {
+  //  d->level_msg = "You begin to shiver from the cold."; 
+  //}
+  else {
+    d->level_msg = "You hear a strange noise...";
+  }
+
+  d->disp_msg = d->level_msg;
+
+  d->display->displayMap();
 
   return 0;
 }
@@ -95,7 +143,7 @@ uint8_t run_dungeon(_dungeon *d) {
       d->display->displayMap();
       cur_node->time += (1000 / cur_node->c->getSpeed());
 
-      /* __Make getting command independant__ */
+      /* __TODO - Make getting command independant__ */
       while(d->player->move(getch())) {
         d->display->displayMap();
       }
@@ -121,6 +169,10 @@ uint8_t run_dungeon(_dungeon *d) {
   return 0;
 }
 
+void setupDisplay(_dungeon *d) {
+  d->display = new cursesDisplay(d);
+}
+
 /* --from Dr Sheaffer-- */
 typedef struct queue_node {
   int x, y;
@@ -140,6 +192,7 @@ void create_monsters(_dungeon *d) {
   if(d->nummon == 0) {
     d->nummon = 20;
   }
+
   int i = 0;
 
   vector<character *> v;
@@ -154,11 +207,14 @@ void create_monsters(_dungeon *d) {
 
   while(i < d->nummon) { 
     npc *n = (npc *) v[rand_range(0, v.size() - 1)];
-    cp = new npc(*n); 
 
-    char_gridxy(cp->getX(), cp->getY()) = cp;
-    heap_insert(&d->event_heap, init_npc_event(cp, d->nummon));
-    i++;
+    if(d->level > n->getLevel()) {
+      cp = new npc(*n); 
+
+      char_gridxy(cp->getX(), cp->getY()) = cp;
+      heap_insert(&d->event_heap, init_npc_event(cp, d->nummon));
+      i++;
+    }
   }
 
   while(v.size() != 0) {
@@ -201,9 +257,11 @@ void createItems(_dungeon *d) {
 
   while(i < d->numitems) { 
     item *n = v[rand_range(0, v.size() - 1)];
-    ip = new item(*n); 
-    d->item_grid[ip->getY()][ip->getX()] = ip;
-    i++;
+    if(d->level > n->getLevel()) {
+      ip = new item(*n); 
+      d->item_grid[ip->getY()][ip->getX()] = ip;
+      i++;
+    }
   }
 
   while(v.size() != 0) {
@@ -232,7 +290,7 @@ void printItem(item *ip) {
 }
 
 int mv_up_stairs(_dungeon *d) {
-  d->level++;
+  d->level--;
   if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_up) {
     d->seed++;
     delete_dungeon(d);
@@ -425,6 +483,7 @@ int in_room(_dungeon *d, int16_t y, int16_t x)
 
 void make_rooms(_dungeon *d) {
   int32_t i;
+
   for(i = 0; i < d->num_rooms; i++) {
     while(1) {
       uint8_t bool_tmp = 1;
@@ -434,9 +493,12 @@ void make_rooms(_dungeon *d) {
       /* end points of new room */
       if(r.x + r.length >= DUNGEON_X) r.length = (DUNGEON_X - 2) - r.x;
       uint8_t r_x2 = r.x + r.length;
+
       if(r.y + r.height >= DUNGEON_Y) r.height = (DUNGEON_Y - 2) - r.y;
       uint8_t r_y2 = r.y + r.height;
+
       if(r.length == r.height) bool_tmp = 0;
+
       for(int j = 0; j < i; j++) {
         uint8_t a_x2 = d->rooms[j].x + d->rooms[j].length;
         uint8_t a_y2 = d->rooms[j].y + d->rooms[j].height;
@@ -459,16 +521,32 @@ void make_rooms(_dungeon *d) {
   }
 }
 
-/* fill rooms with "." */
 void fill_rooms(_dungeon *d) {
   int32_t i;
+  int x, y;
+
   for(i = 0; i < d->num_rooms; i++) {
     uint8_t y1 = d->rooms[i].y;
     uint8_t x1 = d->rooms[i].x;
     uint8_t y2 = d->rooms[i].y + d->rooms[i].height;
     uint8_t x2 = d->rooms[i].x + d->rooms[i].length;
-    for(uint8_t y = y1; y < y2; y++) {
-      for(uint8_t x = x1; x < x2; x++) {
+
+    for(y = y1; y < y2; y++) {
+      if(mapxy(x1 - 1, y) != ter_wall_immutable)
+        mapxy(x1 - 1, y) = ter_border_west;
+      if(mapxy(x2, y) != ter_wall_immutable)
+        mapxy(x2, y) = ter_border_east;
+    }
+
+    for(x = x1 - 1; x < x2 + 1; x++) {
+      if(mapxy(x, y1 - 1) != ter_wall_immutable)
+        mapxy(x, y1 - 1) = ter_border_north;
+      if(mapxy(x, y2) != ter_wall_immutable)
+        mapxy(x, y2) = ter_border_south;
+    }
+
+    for(y = y1; y < y2; y++) {
+      for(x = x1; x < x2; x++) {
         mapxy(x, y) = ter_floor_room;
         hardnessxy(x, y) = 0;
       }
@@ -546,11 +624,21 @@ int place_stairs(_dungeon *d) {
   xu3 = rand_range(d->rooms[5].x + 1, d->rooms[5].length - 2 + d->rooms[5].x);
   yu3 = rand_range(d->rooms[5].y + 1, d->rooms[5].height - 2 + d->rooms[5].y);
 
-  mapxy(xd1, yd1) = ter_stairs_down;
-  mapxy(xd2, yd2) = ter_stairs_down;
-  mapxy(xu1, yu1) = ter_stairs_up;
-  mapxy(xu2, yu2) = ter_stairs_up;
-  mapxy(xu3, yu3) = ter_stairs_up;
+  if(d->level > 1) {
+    mapxy(xd1, yd1) = ter_stairs_down;
+    mapxy(xd2, yd2) = ter_stairs_down;
+    mapxy(xu1, yu1) = ter_stairs_down;
+    mapxy(xu2, yu2) = ter_stairs_up;
+    mapxy(xu3, yu3) = ter_stairs_up;
+  }
+  else {
+    mapxy(xd1, yd1) = ter_stairs_down;
+    mapxy(xd2, yd2) = ter_stairs_down;
+    mapxy(xu1, yu1) = ter_stairs_down;
+    mapxy(xu2, yu2) = ter_stairs_down;
+    mapxy(xu3, yu3) = ter_stairs_down;
+  }
+
   return 0;
 }
 
@@ -568,19 +656,25 @@ inline uint8_t in_los_range(_dungeon *d, int x, int y) {
 /* fills grid from loaded file */
 void load_dungeon(_dungeon *d) {
   uint8_t x, y;
+
   for(y = 1; y < DUNGEON_Y - 1; y++) {
     for(x = 1; x < DUNGEON_X - 1; x++) {
       if(hardnessxy(x, y) == 0) {
-        if(mapxy(x, y) == ter_floor_room) mapxy(x, y) = ter_floor_room;
+        if(mapxy(x, y) == ter_floor_room);
         else mapxy(x, y) = ter_floor_hall;
-      } else {
+      } 
+      else if(mapxy(x, y) == ter_border_south);
+      else if(mapxy(x, y) == ter_border_north);
+      else if(mapxy(x, y) == ter_border_west);
+      else if(mapxy(x, y) == ter_border_east);
+      else {
         mapxy(x, y) = ter_wall;
       }
     }
   }
 }
 
-int read_from_file(_dungeon *d, char *path) {
+int read_from_file(_dungeon *d, const char *path) {
   d->num_rooms = 0;
   FILE *fp;
 
@@ -626,7 +720,7 @@ int read_from_file(_dungeon *d, char *path) {
   return 0;
 }
 
-void save_to_file(_dungeon *d, char* path) {
+void save_to_file(_dungeon *d, const char* path) {
   FILE *fp;
 
   fp = fopen(path, "wb");
@@ -713,6 +807,7 @@ int end_game(_dungeon *d, int mode) {
   delete_dungeon(d);
 
   delete d->player;
+  d->player = nullptr;
 
   delete d->display;
   d->display = nullptr;
@@ -721,3 +816,50 @@ int end_game(_dungeon *d, int mode) {
   return 1;
 }
 
+void print_to_term(_dungeon *d) {
+  uint8_t x, y;
+  for(y = 0; y < DUNGEON_Y; y++) {
+    for(x = 0; x < DUNGEON_X; x++) {
+      if(d->player && x == d->player->getX() && y == d->player->getY()) {
+        putchar('@');
+      }
+      else {
+        switch(mapxy(x ,y)) {
+          case ter_wall:
+          case ter_wall_immutable:
+            putchar(' ');
+            break;
+          case ter_border_north:
+            putchar('-');
+            break;
+          case ter_border_south:
+            putchar('-');
+            break;
+          case ter_border_west:
+            putchar('|');
+            break;
+          case ter_border_east:
+            putchar('|');
+            break;
+          case ter_floor:
+          case ter_floor_room:
+            putchar('.');
+            break;
+          case ter_floor_hall:
+            putchar('#');
+            break;
+          case ter_stairs_down:
+            putchar('>');
+            break;
+          case ter_stairs_up:
+            putchar('<');
+            break;
+          case endgame_flag:
+            putchar('X');
+            break;
+        } 
+      }
+    }
+    putchar('\n');
+  }
+}

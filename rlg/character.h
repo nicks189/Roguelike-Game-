@@ -8,6 +8,9 @@
 #include "dice.h"
 
 #define BAD_ROOM 3063
+#define DEFAULT_HIT 70
+#define DEFAULT_SPEED 10
+#define DEFAULT_MANA 100
 
 typedef struct dungeon _dungeon;
 
@@ -24,18 +27,25 @@ class character {
     string name;
     string description;
     dice *damage;
+    int x, y;
+    pair_t next;
+    pair_t prev;
+    /*       *
+     * Stats *
+     *       */
     int hp;
     int maxhp;
     int color;
-    int x, y;
     int traits;
+    int mana;
+    int maxMana;
+    int intellect;
     int hit;
     int dodge;
     int speed;
     int dead;
+    int level;
     char symbol;
-    pair_t next;
-    pair_t prev;
     /*                               *
      * Protected member functions    *
      *                               */
@@ -64,9 +74,13 @@ class character {
     int getX() { return x; }
     int getY() { return y; }
     int getHit() { return hit; }
+    int getMana() { return mana; }
+    int getMaxMana() { return maxMana; }
+    int getIntellect() { return intellect; }
     int getDodge() { return dodge; }
     int getSpeed() { return speed; }
     int getTraits() { return traits; }
+    int getLevel() { return level; }
     int8_t isDead() { return dead; }
     void setDesc(string d) { description = d; } 
     void setName(string d) { name = d; } 
@@ -77,10 +91,14 @@ class character {
     void setSymbol(char d) { symbol = d; }
     void setX(int t) { x = t; }
     void setY(int t) { y = t; } 
+    void setMana(int m) { mana = m; }
+    void setMaxMana(int m) { maxMana = m; }
+    void setIntellect(int n) { intellect = n; }
     void setHit(int t) { hit = t; }
     void setDodge(int t) { dodge = t; }
     void setSpeed(int d) { speed = d; }
     void setTraits(int d) { traits = d; }
+    void setLevel(int d) { level = d; }
     void kill() { dead = 1; }
     /*                        * 
      * Other member functions *

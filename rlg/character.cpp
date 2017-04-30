@@ -1,5 +1,6 @@
 #include "character.h"
 #include "dungeon.h"
+#include "npc.h"
 
 using std::string;
 
@@ -15,10 +16,14 @@ character::character(_dungeon *dun) : d(dun) {
   traits = 0;
   symbol = '?';
   hp = 0;
-  hit = 0;
+  hit = DEFAULT_HIT;
   dodge = 0;
   maxhp = 0;
+  level = 0;
   color = COLOR_WHITE;
+  mana = DEFAULT_MANA;
+  maxMana = DEFAULT_MANA;
+  intellect = 0;
   damage = nullptr;
 }
 
@@ -32,14 +37,14 @@ int character::findRandNeighbor() {
 
     if(rand_x != x || rand_y != y) {
       if(mapxy(rand_x, rand_y) == ter_wall_immutable) {}
-      else if(traits & NPC_TUNNEL) {
+      else if(traits & NPC_TUNNEL || traits & NPC_PASS_WALL) {
         next[dim_x] = rand_x;
         next[dim_y] = rand_y;
         done = 1;
       }  
-
       else {
-        if(mapxy(rand_x, rand_y) != ter_wall) { 
+        if(mapxy(rand_x, rand_y) == ter_floor_hall 
+            || mapxy(rand_x, rand_y) == ter_floor_room) { 
           next[dim_x] = rand_x;
           next[dim_y] = rand_y;
           done = 1;

@@ -3,8 +3,9 @@
 #include "character.h"
 #include "dungeon.h"
 
-npc::npc(_dungeon *dun) : character(dun) {
+npc::npc(_dungeon *dun) : character(dun), npcItem() {
   search_dir = rand_range(0, 7);
+ 
   int tx, ty, tempRoom;
   do {
 
@@ -26,8 +27,9 @@ npc::npc(_dungeon *dun) : character(dun) {
   pc_lsp[dim_y] = 0;
 }
 
-npc::npc(npc &n) : character(n.d) {
+npc::npc(npc &n) : character(n.d), npcItem() {
   search_dir = rand_range(0, 7);
+  level = n.level;
   name = n.name;
   description = n.description;
   damage = new dice(); 
@@ -66,6 +68,19 @@ int npc::attackPos() {
   character *c = char_gridpair(next);
 
   if(next[dim_x] == d->player->getX() && next[dim_y] == d->player->getY())  {
+    int temphit = hit;
+    temphit -= d->player->getDodge();
+
+    if(temphit < rand_range(0, 100)) {
+      d->disp_msg = "You dodged ";
+      d->disp_msg.append(name);
+      d->disp_msg.append("'s attack");
+
+      next[dim_x] = x;
+      next[dim_y] = y;
+      return 1;
+    }
+
     int dmg = damage->roll();
 
     d->disp_msg = "";
@@ -93,7 +108,10 @@ int npc::attackPos() {
 }
 
 int npc::searchHelper(int16_t *p) {
-  if(mappair(p) == ter_floor_room || mappair(p) == ter_floor_hall) {
+  if((traits & NPC_PASS_WALL) && (mappair(p) != ter_wall_immutable)) {
+    return 0;
+  }
+  else if(mappair(p) == ter_floor_room || mappair(p) == ter_floor_hall) {
     return 0;
   }
 
@@ -131,7 +149,7 @@ void npc::search() {
         p[dim_y] = y + 1;
         break;
       case S:
-        p[dim_y] = y - 1;
+        p[dim_y] = y + 1;
         p[dim_x] = x;
         break;
       case SW:
@@ -282,13 +300,16 @@ int npc::move() {
 
       if(hardnesspair(next) == 0) {
 
-        if(mappair(next) == ter_wall) {
+        if(mappair(next) == ter_wall || mappair(next) == ter_border_south
+          || mappair(next) == ter_border_north || mappair(next) == ter_border_west 
+          || mappair(next) == ter_border_east) {
+
           mappair(next) = ter_floor_hall;
           pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
           pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
         }
-
-        
+          
+         
         prev[dim_x] = x;
         prev[dim_y] = y;
         x = next[dim_x];
@@ -300,7 +321,6 @@ int npc::move() {
     else {
       findRandNeighbor();
       attackPos();
-
       
       prev[dim_x] = x;
       prev[dim_y] = y;
@@ -318,8 +338,30 @@ int npc::move() {
     /* Smart Telepathic monsters */
     if(traits & NPC_TELEPATH) {
 
+      /* Smart Telepath Pass monsters */
+      if(traits & NPC_PASS_WALL) {
+        for(tx = x_l; tx <= x_h; tx++) {
+          for(ty = y_l; ty <= y_h; ty++) {
+            if(tx != x || ty != y) {
+              if(tunnelxy(tx, ty).cost <= tunnelpair(next).cost) {
+                next[dim_x] = tx;
+                next[dim_y] = ty;
+              }
+            }
+          }
+        }
+
+        attackPos(); 
+
+        prev[dim_x] = x;
+        prev[dim_y] = y;
+        x = next[dim_x];
+        y = next[dim_y];
+        char_gridpair(next) = this;
+      }
+
       /* Smart Telepathic Tunneling monsters */
-      if(traits & NPC_TUNNEL) {
+      else if(traits & NPC_TUNNEL) {
         for(tx = x_l; tx <= x_h; tx++) {
           for(ty = y_l; ty <= y_h; ty++) {
             if(tx != x || ty != y) {
@@ -346,7 +388,10 @@ int npc::move() {
 
         if(hardnesspair(next) == 0) {
 
-          if(mappair(next) == ter_wall) {
+        if(mappair(next) == ter_wall || mappair(next) == ter_border_south
+          || mappair(next) == ter_border_north || mappair(next) == ter_border_west 
+          || mappair(next) == ter_border_east) {
+
             mappair(next) = ter_floor_hall;
             pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
             pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
@@ -386,8 +431,91 @@ int npc::move() {
     /* Smart Non-Telepathic monsters */
     else {
 
+      /*Smart Non-Telepathic Pass monsters */
+      if(traits & NPC_PASS_WALL && !(traits & NPC_TELEPATH)) {
+        /* If pc is in LoS */
+        if(checkLos()) {
+          for(tx = x_l; tx <= x_h; tx++) {
+            for(ty = y_l; ty <= y_h; ty++) {
+              if(tx != x || ty != y) {
+                if(tunnelxy(tx, ty).cost <= tunnelpair(next).cost) {
+                  next[dim_x] = tx;
+                  next[dim_y] = ty;
+                }
+              }
+            }
+          }
+          pc_lsp[dim_y] = d->player->getY();
+          pc_lsp[dim_x] = d->player->getX();
+        }
+         
+        /* If pc is not in LoS and has a LSP */
+        else if(!(pc_lsp[dim_y] == 0)) {
+          if(pc_lsp[dim_x] < x) {
+            if(pc_lsp[dim_y] < y) {
+              next[dim_x] = x - 1;
+              next[dim_y] = y - 1;
+            }
+
+            else if(pc_lsp[dim_y] > y) {
+              next[dim_x] = x - 1;
+              next[dim_y] = y + 1;
+            }
+
+            else {
+              next[dim_x] = x - 1;
+              next[dim_y] = y;
+            }
+          }
+
+          else if(pc_lsp[dim_x] > x) {
+            if(pc_lsp[dim_y] < y) {
+              next[dim_x] = x + 1;
+              next[dim_y] = y - 1;
+            }
+
+            else if(pc_lsp[dim_y] > y) {
+              next[dim_x] = x + 1;
+              next[dim_y] = y + 1;
+            }
+
+            else {
+              next[dim_x] = x + 1;
+              next[dim_y] = y;
+            }
+          }
+
+          else if(pc_lsp[dim_y] > y) {
+            next[dim_x] = x;
+            next[dim_y] = y + 1;
+          }
+
+          else if(pc_lsp[dim_y] < y) {
+            next[dim_x] = x;
+            next[dim_y] = y - 1;
+          }
+
+          else {
+            next[dim_y] = y;
+            next[dim_x] = x;
+          }
+        }
+
+        else {
+          search();
+        }
+
+        attackPos();
+        
+        prev[dim_x] = x;
+        prev[dim_y] = y;
+        x = next[dim_x];
+        y = next[dim_y];
+        char_gridpair(next) = this;
+      }
+
       /*Smart Non-Telepathic Non-Tunneling monsters */
-      if(!(traits & NPC_TUNNEL)) {
+      else if(!(traits & NPC_TUNNEL)) {
         /* If pc is in LoS */
         if(checkLos()) {
           for(tx = x_l; tx <= x_h; tx++) {
@@ -539,6 +667,7 @@ int npc::move() {
         else {
           search();
         }
+
         attackPos();
 
         if(hardnesspair(next) != 0 && hardnesspair(next) != 255) {
@@ -554,13 +683,14 @@ int npc::move() {
 
         if(hardnesspair(next) == 0) {
 
-          if(mappair(next) == ter_wall) {
+        if(mappair(next) == ter_wall || mappair(next) == ter_border_south
+          || mappair(next) == ter_border_north || mappair(next) == ter_border_west 
+          || mappair(next) == ter_border_east) {
+
             mappair(next) = ter_floor_hall;
             pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
             pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
           }
-
-          //check_cur_room(d, mon, NPC_MODE);
           
           prev[dim_x] = x;
           prev[dim_y] = y;
@@ -574,11 +704,68 @@ int npc::move() {
 
   /* Non Smart monsters */
   else {
+
     /* Non-Smart Telepathic monsters */
     if(traits & NPC_TELEPATH) {
 
+      /* Non-Smart Telepathic Pass monsters */
+      if(traits & NPC_PASS_WALL) {
+
+        if(d->player->getX() < x) {
+          if(d->player->getY() < y) {
+            next[dim_x] = x - 1;
+            next[dim_y] = y - 1;
+          }
+
+          else if(d->player->getY() > y) {
+            next[dim_x] = x - 1;
+            next[dim_y] = y + 1;
+          }
+
+          else {
+            next[dim_x] = x - 1;
+            next[dim_y] = y;
+          }
+        }
+
+        else if(d->player->getX() > x) {
+          if(d->player->getY() < y) {
+            next[dim_x] = x + 1;
+            next[dim_y] = y - 1;
+          }
+
+          else if(d->player->getY() > y) {
+            next[dim_x] = x + 1;
+            next[dim_y] = y + 1;
+          }
+
+          else {
+            next[dim_x] = x + 1;
+            next[dim_y] = y;
+          }
+        }
+
+        else if(d->player->getY() > y) {
+          next[dim_x] = x;
+          next[dim_y] = y + 1;
+        }
+
+        else if(d->player->getY() < y) {
+          next[dim_x] = x;
+          next[dim_y] = y - 1;
+        }
+
+        attackPos();
+
+        prev[dim_x] = x;
+        prev[dim_y] = y;
+        x = next[dim_x];
+        y = next[dim_y];
+        char_gridpair(next) = this;
+      }
+
       /* Non-Smart Telepathic Tunneling monsters */
-      if(traits & NPC_TUNNEL) {
+      else if(traits & NPC_TUNNEL) {
 
         if(d->player->getX() < x) {
           if(d->player->getY() < y) {
@@ -638,7 +825,10 @@ int npc::move() {
 
         if(hardnesspair(next) == 0) {
 
-          if(mappair(next) == ter_wall) {
+        if(mappair(next) == ter_wall || mappair(next) == ter_border_south
+          || mappair(next) == ter_border_north || mappair(next) == ter_border_west 
+          || mappair(next) == ter_border_east) {
+
             mappair(next) = ter_floor_hall;
             pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
             pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
@@ -713,8 +903,69 @@ int npc::move() {
     /* Non-Smart Non-Telepathic Monsters */
     else {
 
+      /* Non-Smart Non-Telepathic Pass monsters */
+      if(traits & NPC_PASS_WALL) {
+        if(checkLos()) {
+          if(d->player->getX() < x) {
+            if(d->player->getY() < y) {
+              next[dim_x] = x - 1;
+              next[dim_y] = y - 1;
+            }
+
+            else if(d->player->getY() > y) {
+              next[dim_x] = x - 1;
+              next[dim_y] = y + 1;
+            }
+
+            else {
+              next[dim_x] = x - 1;
+              next[dim_y] = y;
+            }
+          }
+
+          else if(d->player->getX() > x) {
+            if(d->player->getY() < y) {
+              next[dim_x] = x + 1;
+              next[dim_y] = y - 1;
+            }
+
+            else if(d->player->getY() > y) {
+              next[dim_x] = x + 1;
+              next[dim_y] = y + 1;
+            }
+
+            else {
+              next[dim_x] = x + 1;
+              next[dim_y] = y;
+            }
+          }
+
+          else if(d->player->getY() > y) {
+            next[dim_x] = x;
+            next[dim_y] = y + 1;
+          }
+
+          else if(d->player->getY() < y) {
+            next[dim_x] = x;
+            next[dim_y] = y - 1;
+          }
+        }
+
+        else {
+          search();
+        }
+
+        attackPos();
+
+        prev[dim_x] = x;
+        prev[dim_y] = y;
+        x = next[dim_x];
+        y = next[dim_y];
+        char_gridpair(next) = this;
+      }
+
       /* Non-Smart Non-Telepathic Tunneling monsters */
-      if(traits & NPC_TUNNEL) {
+      else if(traits & NPC_TUNNEL) {
         if(checkLos()) {
           if(d->player->getX() < x) {
             if(d->player->getY() < y) {
@@ -780,7 +1031,10 @@ int npc::move() {
 
         if(hardnesspair(next) == 0) {
 
-          if(mappair(next) == ter_wall) {
+        if(mappair(next) == ter_wall || mappair(next) == ter_border_south
+          || mappair(next) == ter_border_north || mappair(next) == ter_border_west 
+          || mappair(next) == ter_border_east) {
+
             mappair(next) = ter_floor_hall;
             pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
             pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
@@ -861,6 +1115,21 @@ int npc::move() {
       }
     }
   }
+
+  if(traits & NPC_DESTROY_ITEM) {
+    if(d->item_grid[y][x] != nullptr) {
+      delete d->item_grid[y][x];
+      d->item_grid[y][x] = nullptr;
+    }
+  }
+
+  if(traits & NPC_PICKUP_ITEM) {
+    if(d->item_grid[y][x] != nullptr) {
+      npcItem = d->item_grid[y][x];
+      d->item_grid[y][x] = nullptr;
+    }
+  }
+
   return 0;
 
   /* As a side note, I'm fully aware how terrible this is */

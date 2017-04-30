@@ -28,6 +28,7 @@ typedef enum object_type {
   GOLD_TYPE,
   AMMUNITION_TYPE,
   FOOD_TYPE,
+  WATER_TYPE,
   WAND_TYPE,
   CONTAINER_TYPE
 } objectType;
@@ -39,15 +40,19 @@ class item {
     string name;
     string description;
     objectType type;
-    int color;
-    int hit;
     dice *damage;
+    int color;
+    /*       *
+     * Stats *
+     *       */
+    int hit;
     int defense;
     int dodge;
     int weight;
     int speed;
     int attribute;
     int value;
+    int level;
     char symbol;
     bool known;
     int isOpen(int, int);
@@ -74,6 +79,7 @@ class item {
     int getSpeed() { return speed; }
     int getAttribute() { return attribute; }
     int getValue() { return value; }
+    int getLevel() { return level; }
     bool isKnown() { return known; } 
     char getSymbol() { return symbol; }
     string toString();
@@ -91,6 +97,7 @@ class item {
     void setValue(int n) { value = n; }
     void setSymbol(char n) { symbol = n; }
     void setSymbol(objectType t);
+    void setLevel(int n) { level = n; }
     void setKnown() { known = true; }
 };
 

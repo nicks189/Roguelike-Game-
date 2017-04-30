@@ -4,12 +4,17 @@ ECHO = echo
 RM = rm -f
 
 CFLAGS = -Ofast -Wall -Werror -ggdb -pg -funroll-loops
-CXXFLAGS = -std=c++11 -Wall -Werror -Wno-narrowing -ggdb -funroll-loops
+CXXFLAGS = -std=c++11 -Ofast -Wall -Werror -Wno-narrowing -ggdb -funroll-loops -pg
 LDFLAGS = -lncurses -pg
 
 BIN = rlg
 OBJS = rlg.o heap.o dungeon.o pathfinding.o character.o event.o \
-       pc.o npc.o factory.o dice.o item.o display.o
+       pc.o npc.o factory.o dice.o item.o display.o projectile.o \
+			 effect.o mapMaker.o
+
+MAPOBJS = heap.o dungeon.o pathfinding.o character.o event.o \
+       pc.o npc.o factory.o dice.o item.o display.o projectile.o \
+			 effect.o mapMaker.o
 
 all: $(BIN) etags
 
@@ -29,9 +34,13 @@ $(BIN): $(OBJS)
 
 .PHONY: all clean clobber etags
 
+map: mapMakerMain.cpp
+	@$(ECHO) Compiling $<
+	@$(CXX) $(CXXFLAGS) $(MAPOBJS) -o map $< $(LDFLAGS)
+
 clean:
 	@$(ECHO) Removing all generated files
-	@$(RM) *.o $(BIN) *.d TAGS gmon.out core vgcore.* 
+	@$(RM) *.o $(BIN) *.d TAGS gmon.out core vgcore.* map
 
 clobber: clean
 	@$(ECHO) Removing backup files
