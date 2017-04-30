@@ -21,8 +21,6 @@ using std::cout;
 using std::endl;
 
 class abstractFactory {
-  /* TODO -- Redundant for now
-   * Maybe always redundant... */
   protected:
     vector<stringstream *> cvector;
     _dungeon *d;

@@ -1,0 +1,11 @@
+###### FEATURES TO BE IMPLEMENTED ######
+
+1) Character customization
+  - Warrior
+    - Higher streangth, hp, lower intellect
+  - Wizard
+    - Higher intellect
+  - Archer
+    - Higher ranged damage 
+  - Rogue
+    - Higher speed, hit, dodge, lower intellect

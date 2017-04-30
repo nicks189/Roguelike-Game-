@@ -1,3 +1,6 @@
-########DEBUG########
+######## DEBUG ########
 
-- Random inifinite loops when goung through long corridors ??
+- Again performance issues -- run with profiling 
+- Randomly freezes ?? Possibly due to C++ program monster
+  - Appears to happen from telepathic tunnelers ??
+  - Not happending anymore ??

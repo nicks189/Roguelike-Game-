@@ -1,6 +1,6 @@
 #include "pathfinding.h"
 
-int32_t weigh_hardness(uint8_t h) {
+inline int weigh_hardness(uint8_t h) {
   if(h < 85) {
     return 1;
   }
@@ -15,8 +15,9 @@ int32_t weigh_hardness(uint8_t h) {
 void pathfinding(_dungeon *d, int16_t x_to, int16_t y_to, uint8_t mode) {
   corridor_path_t *p;
   heap_t h;
-  int x, y;
+  uint8_t x, y;
   pair_t from;
+
   static int init1 = 0;
   static int init0 = 0;
 
@@ -46,6 +47,7 @@ void pathfinding(_dungeon *d, int16_t x_to, int16_t y_to, uint8_t mode) {
 
     d->non_tunnel_map[from[dim_y]][from[dim_x]].cost = 0;
     heap_init(&h, corridor_path_cmp, nullptr);
+
     for (y = 0; y < DUNGEON_Y; y++) {
       for (x = 0; x < DUNGEON_X; x++) {
         if (hardnessxy(x, y) == 0) {

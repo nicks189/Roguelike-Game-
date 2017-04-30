@@ -4,6 +4,7 @@
 item::item(_dungeon *dun) {
   d = dun;
   known = false;
+  level = 0;
   
   int tx, ty, tempRoom;
   do {
@@ -25,6 +26,7 @@ item::item(_dungeon *dun) {
 item::item(item &n) {
   d = n.d;
   name = n.name;
+  level = n.level;
   description = n.description;
   type = n.type;
   color = n.color;
@@ -142,7 +144,7 @@ void item::setSymbol(objectType t) {
     symbol = '$';
   else if(t == AMMUNITION_TYPE)
       symbol = '/';
-  else if(t == FOOD_TYPE)
+  else if(t == FOOD_TYPE || t == WATER_TYPE)
     symbol = ',';
   else if(t == WAND_TYPE)
       symbol = '-';

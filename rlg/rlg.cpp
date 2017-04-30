@@ -12,13 +12,15 @@ using namespace std;
 int main(int argc, char *argv[]) {
   _dungeon d;
   d.seed = time(NULL);
+  d.num_rooms = 0;
   d.nummon = 0;
   d.numitems = 0;
   d.level = 1;
   d.nofog = false;
+  d.custom = true;
 
   /* handles command line args */
-  if(argc > 11) {
+  if(argc > 14) {
     fprintf(stderr, "wrong parameters\n");
     return 1;
   }
@@ -39,6 +41,9 @@ int main(int argc, char *argv[]) {
       }
       else if(!(strcmp(argv[i], "--nofog")) || argv[i][1] == 'g') {
         d.nofog = true;
+      }
+      else if(!(strcmp(argv[i], "--default"))) {
+        d.custom = false;
       }
       else if(!(strcmp(argv[i], "--rand")) || argv[i][1] == 'r') {
         if(argc < ++i + 1 || !sscanf(argv[i], "%ld", &d.seed)) {}

@@ -22,36 +22,34 @@
 #include "pc.h"
 #include "display.h"
 
-/* --from Dr Sheaffer-- */
-#define DUNGEON_X 160
-#define DUNGEON_Y 105
-#define MIN_ROOMS 20 
-#define MAX_ROOMS 30
-#define ROOM_MIN_X 7
-#define ROOM_MIN_Y 5
-#define ROOM_MAX_X 20
-#define ROOM_MAX_Y 15
-#define PC_MODE 0
-#define NPC_MODE 1
+#define DUNGEON_X   160
+#define DUNGEON_Y   105
+#define MIN_ROOMS   20 
+#define MAX_ROOMS   30
+#define ROOM_MIN_X  7
+#define ROOM_MIN_Y  5
+#define ROOM_MAX_X  20
+#define ROOM_MAX_Y  15
+#define PC_MODE     0
+#define NPC_MODE    1
 
-#define rand_range(min, max) ((rand() % (((max) + 1) - (min))) + (min))
-#define mapxy(x, y) (d->map[y][x])
-#define hardnessxy(x, y) (d->hardness[y][x])
-#define mappair(pair) (d->map[pair[dim_y]][pair[dim_x]])
-#define mapxy(x, y) (d->map[y][x])
-#define hardnesspair(pair) (d->hardness[pair[dim_y]][pair[dim_x]])
-#define hardnessxy(x, y) (d->hardness[y][x])
-#define tunnelxy(x, y) (d->tunnel_map[y][x])
-#define tunnelpair(pair) (d->tunnel_map[pair[dim_y]][pair[dim_x]])
-#define ntunnelxy(x, y) (d->non_tunnel_map[y][x])
-#define ntunnelpair(pair) (d->non_tunnel_map[pair[dim_y]][pair[dim_x]])
-#define searchmapxy(x, y) (mon->search_map[y][x])
-#define searchmappair(pair) (mon->search_map[pair[dim_y]][pair[dim_x]])
-#define char_gridxy(x, y) (d->char_grid[y][x])
-#define char_gridpair(pair) (d->char_grid[pair[dim_y]][pair[dim_x]])
+#define rand_range(min, max)  ((rand() % (((max) + 1) - (min))) + (min))
+#define mapxy(x, y)           (d->map[y][x])
+#define hardnessxy(x, y)      (d->hardness[y][x])
+#define mappair(pair)         (d->map[pair[dim_y]][pair[dim_x]])
+#define mapxy(x, y)           (d->map[y][x])
+#define hardnesspair(pair)    (d->hardness[pair[dim_y]][pair[dim_x]])
+#define hardnessxy(x, y)      (d->hardness[y][x])
+#define tunnelxy(x, y)        (d->tunnel_map[y][x])
+#define tunnelpair(pair)      (d->tunnel_map[pair[dim_y]][pair[dim_x]])
+#define ntunnelxy(x, y)       (d->non_tunnel_map[y][x])
+#define ntunnelpair(pair)     (d->non_tunnel_map[pair[dim_y]][pair[dim_x]])
+#define searchmapxy(x, y)     (mon->search_map[y][x])
+#define searchmappair(pair)   (mon->search_map[pair[dim_y]][pair[dim_x]])
+#define char_gridxy(x, y)     (d->char_grid[y][x])
+#define char_gridpair(pair)   (d->char_grid[pair[dim_y]][pair[dim_x]])
 
 using std::string;
-using std::stringstream;
 
 /* --from Dr Sheaffer-- */ 
 typedef struct corridor_path {
@@ -68,6 +66,7 @@ typedef struct room {
 typedef struct dungeon {
   dungeon() : char_grid(), item_grid() {}
   bool nofog;
+  bool custom;
   heap_t event_heap;
   int16_t view_mode;
   pair_t lcoords;
@@ -88,8 +87,10 @@ typedef struct dungeon {
 } _dungeon;
 
 int dungeon_init(_dungeon *d);  
+int dungeon_init_load(_dungeon *d, const char *path);  
 void printMonster(character *cp);
 void printItems(item *ip);
+void setupDisplay(_dungeon *d);
 uint8_t run_dungeon(_dungeon *d);
 void create_monsters(_dungeon *d);
 void createItems(_dungeon *d);
@@ -106,12 +107,11 @@ void connect_rooms(_dungeon *d);
 void print(_dungeon *d);
 void load_dungeon(_dungeon *d);
 int in_room(_dungeon *d, int16_t y, int16_t x);
-int read_from_file(_dungeon *d, char *path);
-void save_to_file(_dungeon *d, char* path);
+int read_from_file(_dungeon *d, const char *path);
+void save_to_file(_dungeon *d, const char* path);
 void delete_dungeon(_dungeon *d);
 void init_dungeon(_dungeon *d, uint8_t load);
 int end_game(_dungeon *d, int mode);
-void mount_ncurses(void);
-void unmount_ncurses(void);
+void print_to_term(_dungeon *d);
 
 #endif

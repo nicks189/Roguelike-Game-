@@ -11,6 +11,7 @@
 #include "terrain.h"
 #include "item.h"
 #include "display.h"
+#include "projectile.h"
 
 #define INVENTORY_SIZE 10
 #define DEFAULT_LIGHT_RADIUS 5
@@ -48,6 +49,7 @@
 #define EXPUNGE_SCREEN 0170
 #define INSPECT_SCREEN 0111
 #define STATS_SCREEN 0143
+#define RANGED_SCREEN 0162
 
 /* Inventory controls */
 #define SLOT0 060
@@ -72,6 +74,8 @@
 #define EQUIPJ 0152
 #define EQUIPK 0153
 #define EQUIPL 0154
+#define EQUIPM 0155
+#define EQUIPN 0156
 
 typedef struct dungeon _dungeon;
 
@@ -79,7 +83,8 @@ struct equipment_t {
   equipment_t() : weapon(), offhand(), ranged(), 
                 armor(), helmet(), cloak(),
                 gloves(), boots(), amulet(),
-                light(), ring_one(), ring_two() {}
+                light(), ring_one(), ring_two(), 
+                wand(), ammunition() {}
 
   item *weapon;
   item *offhand;
@@ -93,17 +98,39 @@ struct equipment_t {
   item *light;
   item *ring_one;
   item *ring_two;
+  item *wand;
+  item *ammunition;
+};
+
+enum characterClass {
+  WARRIOR, 
+  WIZARD,
+  ARCHER,
+  ROGUE,
+  NO_CLASS
 };
 
 class pc : public character {
   private:
     item *equip(item *t);
+    characterClass currentClass;
+    /*         *
+     *  Stats  *
+     *         */
+    int strength;
+    int rangedAP; 
+    int lightRadius;
     int cash;
     int weight;
-    int lightRadius;
+    int score;
+    /*                          *
+     * Private member functions * 
+     *                          */
     int pickupItems();
     int attackPos();
+    int rangedAttack(projectile *p, int cmd);
     bool getInventorySlot(int &s);
+    inline int command(int cmd, displayMode mode);      
     inline int inventoryCommand(int cmd);
     inline int equipmentCommand(int cmd);
     inline int wearCommand(int cmd);
@@ -112,6 +139,8 @@ class pc : public character {
     inline int expungeCommand(int cmd);
     inline int inspectCommand(int cmd);
     inline int statsCommand(int cmd);
+    inline int rangedCommand(int cmd);
+    inline void updateDesc();
 
   public:
     pc(_dungeon *dun);
@@ -121,12 +150,21 @@ class pc : public character {
     equipment_t equipment;
     item *inventory[INVENTORY_SIZE];
     terrain_t pcmap[DUNGEON_Y][DUNGEON_X];
+    bool fireball_is_learned;
+    bool heal_is_learned;
     int move(int move);
     int move(); 
     int getCash() { return cash; }
+    int getStrength() { return strength; }
     int getLightRadius() { return lightRadius; }
     int getWeight() { return weight; }
-    inline int command(int cmd, displayMode mode);      
+    int getRangedAP() { return rangedAP; }
+    int getScore() { return score; }
+    characterClass getClass() { return currentClass; }
+    void setClass(characterClass c) { currentClass = c; }
+    void setStrength(int s) { strength = s; }
+    void setRangedAP(int n) { rangedAP = n; }
+    void setScore(int n) { score = n; }
     void clearInventories();
     void updateMap();
     void initMap();

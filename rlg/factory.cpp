@@ -1,35 +1,42 @@
 #include "dungeon.h"
 #include "factory.h"
 #include "dice.h"
+#include "display.h"
 
 inline int setcolor(string color) {
   if(color == "RED")
-    return 1;  
+    return COLOR_RED;  
   else if(color == "GREEN")
-    return 2;  
+    return COLOR_GREEN;  
   else if(color == "YELLOW")
-    return 3;  
+    return COLOR_YELLOW;  
   else if(color == "BLUE")
-    return 4;  
+    return COLOR_BLUE;  
   else if(color == "CYAN")
-    return 5;  
+    return COLOR_CYAN;  
   else if(color == "MAGENTA")
-    return 6;  
+    return COLOR_MAGENTA;  
   else 
-    return 7;  
+    return COLOR_WHITE;  
 }
 
 inline int getabils(string a) {
   int t = 0;
 
-  if(a == "ERRATIC")
-    t += 8;
-  if(a == "TUNNEL")
-    t += 4;
-  if(a == "TELE")
-    t += 2;
-  if(a == "SMART")
-    t += 1;
+  if(a == "PICKUP")
+    t += 0x00000040;
+  else if(a == "DESTROY")
+    t += 0x00000020;
+  else if(a == "PASS")
+    t += 0x00000010;
+  else if(a == "ERRATIC")
+    t += 0x00000008;
+  else if(a == "TUNNEL")
+    t += 0x00000004;
+  else if(a == "TELE")
+    t += 0x00000002;
+  else if(a == "SMART")
+    t += 0x00000001;
 
   return t;
 }
@@ -38,39 +45,41 @@ inline objectType settype(string t) {
   if(t == "WEAPON")
     return WEAPON_TYPE;
   else if(t == "OFFHAND")
-      return OFFHAND_TYPE;
+    return OFFHAND_TYPE;
   else if(t == "RANGED")
     return RANGED_TYPE;
   else if(t == "ARMOR")
-      return ARMOR_TYPE;
+    return ARMOR_TYPE;
   else if(t == "HELMET")
     return HELMET_TYPE;
   else if(t == "CLOAK")
-      return CLOAK_TYPE;
+    return CLOAK_TYPE;
   else if(t == "GLOVES")
     return GLOVE_TYPE;
   else if(t == "BOOTS")
-      return BOOT_TYPE;
+    return BOOT_TYPE;
   else if(t == "RING")
     return RING_TYPE;
   else if(t == "AMULET")
-      return AMULET_TYPE;
+    return AMULET_TYPE;
   else if(t == "LIGHT")
     return LIGHT_TYPE;
   else if(t == "SCROLL")
-      return SCROLL_TYPE;
+    return SCROLL_TYPE;
   else if(t == "BOOK")
     return BOOK_TYPE;
   else if(t == "FLASK")
-      return FLASK_TYPE;
+    return FLASK_TYPE;
   else if(t == "GOLD")
     return GOLD_TYPE;
   else if(t == "AMMUNITION")
-      return AMMUNITION_TYPE;
+    return AMMUNITION_TYPE;
   else if(t == "FOOD")
     return FOOD_TYPE;
+  else if(t == "WATER")
+    return WATER_TYPE;
   else if(t == "WAND")
-      return WAND_TYPE;
+    return WAND_TYPE;
   else if(t == "CONTAINER")
     return CONTAINER_TYPE;
   else 
@@ -79,9 +88,16 @@ inline objectType settype(string t) {
 
 characterFactory::characterFactory(_dungeon *dun) {
   d = dun;
+  string path;
 
-  string path = getenv("HOME");
-  path += "/.rlg327/monster_desc.txt";
+  if(d->custom) {
+    path = "monster_desc.txt";
+  }
+
+  else {
+    path = getenv("HOME");
+    path.append("/.rlg327/monster_desc.txt");
+  }
 
   ifstream f(path); 
   stringstream *ss;
@@ -91,6 +107,7 @@ characterFactory::characterFactory(_dungeon *dun) {
   getline(f, buf);
   if(buf != "RLG327 MONSTER DESCRIPTION 1") {
     fprintf(stderr, "File mismatch -- missing \"monster_desc.txt\"\n");
+    exit(-1);
   }
   buf = "";
 
@@ -135,6 +152,16 @@ void *characterFactory::generateNext() {
   bool failed = false;
 
   while(*ss >> buf) {
+
+    /* OPTIONAL ----       *
+     * Minimum spawn level * 
+     *                     */
+    if(buf == "LVL") { 
+      ss->get();
+      *ss >> cbuf;
+      c->setLevel(std::stoi(cbuf));
+    }
+
     /* Name */
     if(buf == "NAME") { 
       if(!nameset) {
@@ -315,6 +342,17 @@ void *characterFactory::generateNext() {
 
   if(nameset && descset && colorset && speedset && abilset 
                          && hpset && damset && symbset && !failed) {
+
+    if(d->level > 1) {
+      c->setHit((10 * d->level) + DEFAULT_HIT);
+      c->setDodge(5 * d->level);
+    }
+
+    if(c->getLevel() > 0) {
+      c->setHit(c->getHit() + (6 * c->getLevel())); 
+      c->setDodge(c->getDodge() + (3 * c->getLevel())); 
+    }
+
     return c;
   }
 
@@ -326,9 +364,16 @@ void *characterFactory::generateNext() {
 
 itemFactory::itemFactory(_dungeon *dun) {
   d = dun;
+  string path;
 
-  string path = getenv("HOME");
-  path += "/.rlg327/object_desc.txt";
+  if(d->custom) {
+    path = "object_desc.txt";
+  }
+
+  else {
+    path = getenv("HOME");
+    path.append("/.rlg327/object_desc.txt");
+  }
 
   ifstream f(path); 
   stringstream *ss;
@@ -338,6 +383,7 @@ itemFactory::itemFactory(_dungeon *dun) {
   getline(f, buf);
   if(buf != "RLG327 OBJECT DESCRIPTION 1") {
     fprintf(stderr, "File mismatch -- missing \"object_desc.txt\"\n");
+    exit(-1);
   }
   buf = "";
 
@@ -386,6 +432,15 @@ void *itemFactory::generateNext() {
   bool failed = false;
 
   while(*ss >> buf) {
+
+    /* OPTIONAL ----       *
+     * Minimum spawn level * 
+     *                     */
+    if(buf == "LVL") { 
+      ss->get();
+      *ss >> cbuf;
+      c->setLevel(std::stoi(cbuf));
+    }
 
     /* Name */
     if(buf == "NAME") { 
