@@ -12,12 +12,12 @@ using namespace std;
 int main(int argc, char *argv[]) {
   _dungeon d;
   d.seed = time(NULL);
-  d.num_rooms = 0;
   d.nummon = 0;
   d.numitems = 0;
   d.level = 1;
   d.nofog = false;
   d.custom = true;
+
 
   /* handles command line args */
   if(argc > 14) {
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
   srand(d.seed);
   cout << "Using seed: " << d.seed << endl;
-    
+
   dungeon_init(&d);
   run_dungeon(&d);
 
