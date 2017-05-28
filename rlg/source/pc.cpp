@@ -1,10 +1,10 @@
 #include <climits>
 
-#include "pc.h"
-#include "pathfinding.h"
-#include "dungeon.h"
-#include "projectile.h"
-#include "effect.h"
+#include "../include/pc.h"
+#include "../include/pathfinding.h"
+#include "../include/dungeon.h"
+#include "../include/projectile.h"
+#include "../include/effect.h"
 
 pc::pc(_dungeon *dun, int16_t *loc) : character(dun), inventory() {
   name = "Player";

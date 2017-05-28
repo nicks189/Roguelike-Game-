@@ -1,7 +1,7 @@
-#include "character_util.h"
-#include "character.h"
-#include "npc.h"
-#include "pc.h"
+#include "../include/character_util.h"
+#include "../include/character.h"
+#include "../include/npc.h"
+#include "../include/pc.h"
 
 #ifdef __cplusplus 
 extern "C" {

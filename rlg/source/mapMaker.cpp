@@ -1,5 +1,5 @@
-#include "mapMaker.h"
-#include "dungeon.h"
+#include "../include/mapMaker.h"
+#include "../include/dungeon.h"
 
 mapMaker::mapMaker() {
   d = (_dungeon *) malloc(sizeof(*d));

@@ -1,5 +1,5 @@
-#include "effect.h"
-#include "dungeon.h"
+#include "../include/effect.h"
+#include "../include/dungeon.h"
 
 effect::effect(_dungeon *dun) : d(dun) {
   damage = 0;

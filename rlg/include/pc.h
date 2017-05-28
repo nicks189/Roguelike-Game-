@@ -112,7 +112,6 @@ enum characterClass {
 
 class pc : public character {
   private:
-    item *equip(item *t);
     characterClass currentClass;
     /*         *
      *  Stats  *
@@ -126,6 +125,7 @@ class pc : public character {
     /*                          *
      * Private member functions * 
      *                          */
+    item *equip(item *t);
     int pickupItems();
     int attackPos();
     int rangedAttack(projectile *p, int cmd);

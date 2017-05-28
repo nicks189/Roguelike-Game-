@@ -1,4 +1,4 @@
-#include "dice.h"
+#include "../include/dice.h"
 
 int dice::roll() const {
   int total;

@@ -1,7 +1,7 @@
-#include "npc.h"
-#include "pathfinding.h"
-#include "character.h"
-#include "dungeon.h"
+#include "../include/npc.h"
+#include "../include/pathfinding.h"
+#include "../include/character.h"
+#include "../include/dungeon.h"
 
 npc::npc(_dungeon *dun) : character(dun), npcItem() {
   search_dir = rand_range(0, 7);

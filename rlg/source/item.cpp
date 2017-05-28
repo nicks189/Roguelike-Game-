@@ -1,5 +1,5 @@
-#include "item.h"
-#include "dungeon.h"
+#include "../include/item.h"
+#include "../include/dungeon.h"
 
 item::item(_dungeon *dun) {
   d = dun;

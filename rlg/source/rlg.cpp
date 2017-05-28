@@ -3,9 +3,9 @@
 #include <string>
 #include <fstream>
 
-#include "dungeon.h"
-#include "factory.h"
-#include "item.h"
+#include "../include/dungeon.h"
+#include "../include/factory.h"
+#include "../include/item.h"
 
 using namespace std;
 
@@ -16,7 +16,8 @@ int main(int argc, char *argv[]) {
   d.numitems = 0;
   d.level = 1;
   d.nofog = false;
-  d.custom = true;
+  /* Currently not using d.custom */
+  d.custom = false;
 
 
   /* handles command line args */

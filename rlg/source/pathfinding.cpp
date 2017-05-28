@@ -1,4 +1,4 @@
-#include "pathfinding.h"
+#include "../include/pathfinding.h"
 
 inline int weigh_hardness(uint8_t h) {
   if(h < 85) {

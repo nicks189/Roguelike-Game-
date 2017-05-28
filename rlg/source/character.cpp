@@ -1,6 +1,6 @@
-#include "character.h"
-#include "dungeon.h"
-#include "npc.h"
+#include "../include/character.h"
+#include "../include/dungeon.h"
+#include "../include/npc.h"
 
 using std::string;
 

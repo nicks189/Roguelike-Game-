@@ -65,4 +65,22 @@ class cursesDisplay : public abstractDisplay {
     void endGameScreen(int mode);
 };
 
+class sfmlDisplay : public abstractDisplay {
+  private:
+    inline int inLosRange(int x, int y);
+  public:
+    sfmlDisplay(_dungeon *dun);
+    ~sfmlDisplay();
+    int displayMenu();
+    void displayMap();
+    void displayInventory(displayMode mode); 
+    void displayItemDescription(item *i);
+    void displayCharacterStats();
+    void displayRangedAttack(displayMode);
+    void displayProjectile(projectile *p);
+    void displayEffect(effect *e, int x, int y);
+    void displayNextMessage(string s);
+    void endGameScreen(int mode);
+};
+
 #endif

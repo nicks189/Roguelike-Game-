@@ -1,8 +1,8 @@
 #include <ncurses.h>
 
-#include "display.h"
-#include "dungeon.h"
-#include "pc.h"
+#include "../include/display.h"
+#include "../include/dungeon.h"
+#include "../include/pc.h"
 
 cursesDisplay::cursesDisplay(_dungeon *dun) : abstractDisplay(dun) {
   initscr();
@@ -11,13 +11,13 @@ cursesDisplay::cursesDisplay(_dungeon *dun) : abstractDisplay(dun) {
   curs_set(0);
   keypad(stdscr, true);
   start_color();
-  init_pair(COLOR_RED, COLOR_RED,     COLOR_BLACK);
-  init_pair(COLOR_GREEN, COLOR_GREEN,   COLOR_BLACK);
-  init_pair(COLOR_YELLOW, COLOR_YELLOW,  COLOR_BLACK);
-  init_pair(COLOR_BLUE, COLOR_BLUE,    COLOR_BLACK);
-  init_pair(COLOR_CYAN, COLOR_CYAN,    COLOR_BLACK);
+  init_pair(COLOR_RED,     COLOR_RED,     COLOR_BLACK);
+  init_pair(COLOR_GREEN,   COLOR_GREEN,   COLOR_BLACK);
+  init_pair(COLOR_YELLOW,  COLOR_YELLOW,  COLOR_BLACK);
+  init_pair(COLOR_BLUE,    COLOR_BLUE,    COLOR_BLACK);
+  init_pair(COLOR_CYAN,    COLOR_CYAN,    COLOR_BLACK);
   init_pair(COLOR_MAGENTA, COLOR_MAGENTA, COLOR_BLACK);
-  init_pair(COLOR_WHITE, COLOR_WHITE,   COLOR_BLACK);
+  init_pair(COLOR_WHITE,   COLOR_WHITE,   COLOR_BLACK);
 }
 
 cursesDisplay::~cursesDisplay() {
@@ -163,10 +163,12 @@ void cursesDisplay::displayMap() {
 
   string msg = d->disp_msg;
 
+  /* Currently just truncating display message, change later */
   if(msg.size() > 80) {
     msg.resize(80);
   }
 
+  /* Setting up output */
   int hptemp = d->player->getHp() >= 0 ? d->player->getHp() : 0;
   string hpmsg = "HP:" + std::to_string(hptemp) + "(" 
         + std::to_string(d->player->getMaxHp()) + ")";
@@ -174,19 +176,20 @@ void cursesDisplay::displayMap() {
   string manamsg = "M:" + std::to_string(d->player->getMana()) + "(" 
         + std::to_string(d->player->getMaxMana()) + ")";
   string namemsg = d->player->getName() + " " + d->player->getDesc();
-  string statsmsg = "St:" + std::to_string(d->player->getStrength());
   string pclvlmsg = "Lv:" + std::to_string(d->player->getLevel());
   string scoremsg = "S:" + std::to_string(d->player->getScore());
+  string statsmsg = "St:" + std::to_string(d->player->getStrength());
   statsmsg += " Sp:" + std::to_string(d->player->getSpeed());
   statsmsg += " In:" + std::to_string(d->player->getIntellect());
   statsmsg += " Dg:" + std::to_string(d->player->getDodge());
-  statsmsg += " Ht:" + std::to_string(d->player->getHit());
+  statsmsg += " Ht:" + std::to_string(d->player->getHit() - 70);
   statsmsg += " Rg:" + std::to_string(d->player->getRangedAP());
 
+  /* Format and display output */
   mvprintw(0, 0, "%s", msg.c_str());
   mvprintw(22, 0, namemsg.c_str());
-  mvprintw(22, namemsg.size() + 8, pclvlmsg.c_str());
-  mvprintw(22, namemsg.size() + pclvlmsg.size() + 9, statsmsg.c_str());
+  mvprintw(22, namemsg.size() + 2, pclvlmsg.c_str());
+  mvprintw(22, namemsg.size() + pclvlmsg.size() + 3, statsmsg.c_str());
   mvprintw(22, 80 - (scoremsg.size() + 1), scoremsg.c_str());
   mvprintw(23, 0, "%s%d", "Dlvl:", d->level);
   mvprintw(23, 8, cashmsg.c_str());
@@ -414,7 +417,7 @@ void cursesDisplay::displayCharacterStats() {
   mvprintw(1, d->player->getName().size() + 1, "%s", d->player->getDesc().c_str());
   mvprintw(2, 0, "HP:           - %d(%d)", d->player->getHp(), d->player->getMaxHp());
   mvprintw(3, 0, "Dodge:        - %d", d->player->getDodge());
-  mvprintw(4, 0, "Hit:          - %d", d->player->getHit());
+  mvprintw(4, 0, "Hit:          - %d", d->player->getHit() - 70);
   mvprintw(5, 0, "Intellect:    - %d", d->player->getIntellect());
   mvprintw(6, 0, "Strength:     - %d", d->player->getStrength());
   mvprintw(7, 0, "Speed:        - %d", d->player->getSpeed());
@@ -707,6 +710,7 @@ void cursesDisplay::displayEffect(effect *e, int f, int s) {
   attroff(COLOR_PAIR(e->getColor()));
 
   refresh();
+  /* Could be adjusted */
   usleep(99990);
 }
 

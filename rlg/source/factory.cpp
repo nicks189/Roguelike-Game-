@@ -1,7 +1,7 @@
-#include "dungeon.h"
-#include "factory.h"
-#include "dice.h"
-#include "display.h"
+#include "../include/dungeon.h"
+#include "../include/factory.h"
+#include "../include/dice.h"
+#include "../include/display.h"
 
 inline int setcolor(string color) {
   if(color == "RED")

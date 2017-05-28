@@ -1,7 +1,7 @@
 /* --from Dr Sheaffer-- */
 
-#include "heap.h"
-#include "macros.h"
+#include "../include/heap.h"
+#include "../include/macros.h"
 
 #undef min
 

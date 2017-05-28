@@ -1,9 +1,10 @@
 #include <vector>
 
-#include "dungeon.h"
-#include "pathfinding.h"
-#include "event.h"
-#include "factory.h"
+#include "../include/dungeon.h"
+#include "../include/pathfinding.h"
+#include "../include/event.h"
+#include "../include/factory.h"
+#include "../include/shop_keeper.h"
 
 using std::vector;
 using std::stringstream;
@@ -45,8 +46,8 @@ int dungeon_init(_dungeon *d) {
   pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
   pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
 
-  create_monsters(d);
-  createItems(d);
+  create_monsters(d, d->nummon > 0 ? d->nummon : 20);
+  createItems(d, d->numitems > 0 ? d->numitems : 20);
 
   d->player->updateMap(); 
 
@@ -75,6 +76,18 @@ int dungeon_init_load(_dungeon *d, const char *path) {
   if(read_from_file(d, path)) {
     return 1;
   }
+
+  if(d->level == 2) {
+    d->level_msg = "You hear a strange noise...";
+    d->nummon = 5;
+    d->numitems = 8;
+  }
+  //else if(d->level < 6) {
+  //  d->level_msg = "You begin to shiver from the cold."; 
+  //}
+  else {
+    d->level_msg = "It's very dark... you wonder how you got here.";
+  }
   
   fill_rooms(d);
   load_dungeon(d);
@@ -87,20 +100,10 @@ int dungeon_init_load(_dungeon *d, const char *path) {
   pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
   pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
 
-  create_monsters(d);
-  createItems(d);
+  create_monsters(d, d->nummon > 0 ? d->nummon : 20);
+  createItems(d, d->numitems > 0 ? d->numitems : 20);
 
   d->player->updateMap(); 
-
-  if(d->level != 6) {
-    d->level_msg = "It's very dark... you wonder how you got here.";
-  }
-  //else if(d->level < 6) {
-  //  d->level_msg = "You begin to shiver from the cold."; 
-  //}
-  else {
-    d->level_msg = "You hear a strange noise...";
-  }
 
   d->disp_msg = d->level_msg;
 
@@ -188,10 +191,10 @@ int gaussian[5][5] = {
   {  1,  4,  7,  4,  1 }
 };
 
-void create_monsters(_dungeon *d) {
-  if(d->nummon == 0) {
-    d->nummon = 20;
-  }
+void create_monsters(_dungeon *d, int num) {
+  // if(d->nummon == 0) {
+  //   d->nummon = 20;
+  // }
 
   int i = 0;
 
@@ -205,14 +208,14 @@ void create_monsters(_dungeon *d) {
     v.push_back(cp);
   }
 
-  while(i < d->nummon) { 
+  while(i < num) { 
     npc *n = (npc *) v[rand_range(0, v.size() - 1)];
 
     if(d->level > n->getLevel()) {
       cp = new npc(*n); 
 
       char_gridxy(cp->getX(), cp->getY()) = cp;
-      heap_insert(&d->event_heap, init_npc_event(cp, d->nummon));
+      heap_insert(&d->event_heap, init_npc_event(cp, i));
       i++;
     }
   }
@@ -239,11 +242,12 @@ void printMonster(character *cp) {
   cout << "Damage: " << d->toString() << endl;
 }
 
-void createItems(_dungeon *d) {
+void createItems(_dungeon *d, int num) {
+  // if(d->numitems == 0) {
+  //   d->numitems = 20;
+  // }
+  
   int i = 0;
-  if(d->numitems == 0) {
-    d->numitems = 20;
-  }
 
   vector<item *> v;
 
@@ -255,7 +259,7 @@ void createItems(_dungeon *d) {
     v.push_back(ip);
   }
 
-  while(i < d->numitems) { 
+  while(i < num) { 
     item *n = v[rand_range(0, v.size() - 1)];
     if(d->level > n->getLevel()) {
       ip = new item(*n); 

@@ -1,5 +1,5 @@
-#include "dungeon.h"
-#include "display.h"
+#include "../include/dungeon.h"
+#include "../include/display.h"
 
 projectile::projectile(_dungeon *dun, int x, int y, int dir, int dam)
                     : d(dun), x(x), y(y), direction(dir), damage(dam) {

@@ -5,9 +5,10 @@ Runnning arguments --
  --items or -i to change the number of items loaded
  --nofog or -g to disable fog of war
  --rand <seed> or -r <seed> to select seed
- --default to load monsters/items from ~/.rlg327/ file. Also disables monster/item 
-   levels. (Without this switch the monster/items are loaded from the files in 
-   the current directory - these files are full of additional monsters and items)
+ --default to load monsters/items from ~/.rlg327/ file. Also disables 
+   monster/item levels. (Without this switch the monster/items are loaded from 
+   the files in the current directory - these files are full of additional 
+   monsters and items)
 
 Controls --
  w - wear/consume screen 
@@ -39,14 +40,14 @@ Current features --
 Additional details --
  - Dodge/hit: All characters default with 70% hit chance. Additional hit rating 
    increase percent to hit by that number, ie: 30 hit -> 100% hit chance. Dodge
-   reduces hit chance by the dodge value by the same logic. Higher level monsters 
-   have higher hit/dodge ratings.
+   reduces hit chance by the dodge value by the same logic. Higher level 
+   monsters have higher hit/dodge ratings.
  - Intellect: Increases damage of spells by actual rating and increases mana 
    by half of rating.
- - Using a ranged weapon requires ammunition to be equipped. Ammunition attribute 
-   determines how much ammo. Using ranged weapon decreases ammunition attribute by 
-   one.
- - By default, only poison ball spell is learned. A fireball and heal spell can be
-   learned by picking up and consuming a Scroll of Fire or a Scroll of Wisdom, 
-   respectively.
+ - Using a ranged weapon requires ammunition to be equipped. Ammunition 
+   attribute determines how much ammo. Using ranged weapon decreases ammunition 
+   attribute by one.
+ - By default, only poison ball spell is learned. A fireball and heal spell can 
+   be learned by picking up and consuming a Scroll of Fire or a Scroll of 
+   Wisdom, respectively.
  - As an aside, don't expect much in the way of balance.
