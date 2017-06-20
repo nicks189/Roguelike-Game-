@@ -710,6 +710,7 @@ void cursesDisplay::displayEffect(effect *e, int f, int s) {
   attroff(COLOR_PAIR(e->getColor()));
 
   refresh();
+
   /* Could be adjusted */
   usleep(99990);
 }
@@ -726,6 +727,11 @@ void cursesDisplay::endGameScreen(int mode) {
     getch();
     clear();
     mvprintw(11, 32, "YOU WIN!");
+  }
+  else if(mode == ERROR_MODE) {
+    clear();
+    mvprintw(11, 29, "ERROR - NO SUCH FILE");
+    mvprintw(12, 19, "(Make sure ~/.rlg327/ folder is there)");
   }
   else {
     clear();

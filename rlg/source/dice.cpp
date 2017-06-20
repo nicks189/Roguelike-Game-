@@ -17,11 +17,9 @@ int dice::roll() const {
 
 string dice::toString() {
   string ret;
-
   ret += std::to_string(base) + "+";
   ret += std::to_string(number) + "d";
   ret += std::to_string(sides);
-
   return ret;
 }
 

@@ -16,8 +16,7 @@ int dungeon_init(_dungeon *d) {
   if(d->level == 2) {
     string path = getenv("HOME");
     path.append("/.rlg327/boss01.rlg327");
-    dungeon_init_load(d, path.c_str());
-    return 0;
+    return dungeon_init_load(d, path.c_str());
   }
 
   d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
@@ -95,7 +94,6 @@ int dungeon_init_load(_dungeon *d, const char *path) {
 
   d->player->place(d);  
   heap_insert(&d->event_heap, init_pc_event(d->player));
-
 
   pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
   pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
@@ -298,7 +296,9 @@ int mv_up_stairs(_dungeon *d) {
   if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_up) {
     d->seed++;
     delete_dungeon(d);
-    dungeon_init(d);
+    if(dungeon_init(d)) {
+      end_game(d, ERROR_MODE);
+    }
     d->display->displayMap();
     run_dungeon(d);
   }
@@ -310,7 +310,9 @@ int mv_dwn_stairs(_dungeon *d) {
   if(mapxy(d->player->getX(), d->player->getY()) == ter_stairs_down) {
     d->seed++;
     delete_dungeon(d);
-    dungeon_init(d);
+    if(dungeon_init(d)) {
+      end_game(d, ERROR_MODE);
+    }
     d->display->displayMap();
     run_dungeon(d);
   }

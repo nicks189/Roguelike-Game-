@@ -32,6 +32,7 @@
 #define ROOM_MAX_Y  15
 #define PC_MODE     0
 #define NPC_MODE    1
+#define ERROR_MODE  3
 
 #define rand_range(min, max)  ((rand() % (((max) + 1) - (min))) + (min))
 #define mapxy(x, y)           (d->map[y][x])

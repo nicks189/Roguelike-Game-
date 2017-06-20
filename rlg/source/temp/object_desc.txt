@@ -1,0 +1,733 @@
+RLG327 OBJECT DESCRIPTION 1
+
+BEGIN OBJECT
+NAME Claymore
+DESC
+A large, sturdy blade.
+.
+TYPE WEAPON
+COLOR BLACK
+WEIGHT 25+0d1
+HIT 6+5d6
+ATTR 0+0d1
+VAL 8+6d10
+DAM 8+6d20
+DODGE 0+0d1
+DEF 0+0d1
+SPEED 0+0d1
+END
+
+BEGIN OBJECT
+NAME Short sword
+DESC
+Well, it's a sword alright.
+.
+TYPE WEAPON
+COLOR CYAN
+WEIGHT 25+0d1
+HIT 0+5d6
+ATTR 0+0d1
+VAL 0+6d10
+DAM 2+6d6
+DODGE 0+2d1
+DEF 0+0d1
+SPEED 2+0d1
+END
+
+BEGIN OBJECT
+NAME Brotherhood dagger
+LVL 2
+TYPE WEAPON
+COLOR MAGENTA
+WEIGHT 10+0d1
+HIT 25+0d1
+DAM 25+20d3
+ATTR 8+0d1
+VAL 10+2d6
+DODGE 10+1d8
+DEF 2+0d1
+SPEED 7+0d1
+DESC
+A simple dagger; small, but effective. Clearly marked by the Brotherhood.
+.
+END
+
+BEGIN OBJECT
+NAME a vorpal blade
+LVL 4
+DESC
+One, two! One, two! And through and through!
+It goes snicker-snack.
+.
+TYPE WEAPON
+COLOR RED
+WEIGHT 15+0d1
+HIT 12+3d4
+ATTR 0+0d1
+VAL 198+2d51
+DAM 314+1550d92
+DODGE 0+0d1
+DEF 0+0d1
+SPEED 20+0d5
+END
+
+BEGIN OBJECT
+NAME old bow
+DESC
+A short, inaccurate bow. Could be useful.
+.
+TYPE RANGED
+COLOR YELLOW
+WEIGHT 0+3d2
+HIT 0+0d0
+ATTR 0+6d4
+VAL 0+1d10
+DAM 2+0d1
+DODGE 0+0d0
+DEF 0+0d0
+SPEED 0+1d1
+END
+
+BEGIN OBJECT
+NAME Longbow
+LVL 1
+DESC
+A finely crafted bow.
+.
+TYPE RANGED
+COLOR MAGENTA
+WEIGHT 0+6d2
+HIT 0+3d1
+ATTR 2+8d4
+VAL 2+6d9
+DAM 0+0d0
+DODGE 0+0d0
+DEF 0+0d0
+SPEED 0+1d1
+END
+
+BEGIN OBJECT
+NAME Iron-plated shield
+DESC
+A rugged shield. Not much to look at. 
+.
+TYPE OFFHAND
+WEIGHT 5+0d1
+HIT 0+0d1
+DAM 0+0d1
+VAL 40+0d1
+DODGE 1+2d8
+ATTR 0+0d1
+DEF 4+3d8
+SPEED 1+0d1
+COLOR CYAN
+END
+
+BEGIN OBJECT
+NAME small mace
+LVL 1
+TYPE OFFHAND
+COLOR BLUE
+WEIGHT 0+4d1
+HIT 2+3d2
+DAM 8+2d3
+ATTR 0+4d3
+VAL 1+10d6
+DODGE 5+1d8
+DEF 2+2d2
+SPEED 4+1d3
+DESC
+Perfect for your offhand.
+.
+END
+
+BEGIN OBJECT
+NAME the Aegis
+LVL 2
+DESC
+A very high-quality shield.  Nobody knows what it looks like, except for
+maybe--now--you, but you're not telling.  The back side is inscribed with the
+words: "If found, please return to Zeus, Mount Olympus".
+.
+TYPE OFFHAND
+WEIGHT 3+0d1
+HIT 0+0d1
+DAM 3+1d2
+VAL 17000+0d1
+DODGE 20+2d8
+ATTR 0+0d1
+DEF 20+3d8
+SPEED 10+0d1
+COLOR YELLOW
+END
+
+BEGIN OBJECT
+NAME Moon Stick
+LVL 2
+TYPE OFFHAND
+WEIGHT 1+1d2
+COLOR MAGENTA
+DODGE 10+0d1
+VAL 199+0d1
+DAM 0+0d1
+DEF 100+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+Sailor Moon's Moon Stick.  Maybe you can use it to do Moon Princess Halation?
+But she's probably looking for it.
+.
+ATTR 200+0d1
+END
+
+BEGIN OBJECT
+NAME Steel Breastplate
+LVL 1
+HIT 0+0d1
+DAM 0+8d3
+DODGE 0+0d1
+SPEED -4+0d1
+ATTR 0+0d1
+VAL 49+10d1
+DEF 120+8d3
+DESC
+A heavy breastplate. Not likely to speed you up, but it should keep you safe.
+.
+TYPE ARMOR
+COLOR BLACK
+WEIGHT 80+2d2
+END
+
+BEGIN OBJECT
+NAME leather cheastpiece
+HIT 0+2d1
+DAM 0+1d0
+DODGE 0+2d3
+SPEED 1+2d1
+ATTR 0+0d1
+VAL 12+10d1
+DEF 50+0d1
+DESC
+Doesn't offer the protection of a larger, heavier breastplate, but it offers
+much more manueverability.
+.
+TYPE ARMOR
+COLOR GREEN
+WEIGHT 12+2d2
+END
+
+BEGIN OBJECT
+NAME Cursed chestplate
+LVL 2
+HIT 0+2d1
+DAM 0+3d4
+DODGE 0+3d1
+SPEED 3+0d1
+ATTR 8+0d1
+VAL 2000+10d1
+DEF 90+7d2
+DESC
+An impressive looking chestplate, but it gives off a strange aura.
+.
+TYPE ARMOR
+COLOR RED
+WEIGHT 12+3d2
+END
+
+BEGIN OBJECT
+NAME a chainmail coif
+WEIGHT 8+0d1
+HIT 0+0d1
+DAM 0+0d1
+ATTR 0+0d1
+DODGE 0+0d1
+VAL 48+2d11
+DEF 10+2d6
+SPEED 0+0d1
+DESC
+A heavy chainmail head covering.
+.
+TYPE HELMET
+COLOR BLACK
+END
+
+BEGIN OBJECT
+NAME tinfoil hat
+WEIGHT 1+0d1
+HIT 0+0d1
+DAM 0+0d1
+ATTR 100000+0d1
+DODGE 0+0d1
+VAL 4+2d1
+DEF 1+2d6
+SPEED 2+0d1
+DESC
+It would probably be of more use to someone else...
+.
+TYPE HELMET
+COLOR CYAN
+END
+
+BEGIN OBJECT
+NAME Moon Tiara
+LVL 2
+TYPE HELMET
+WEIGHT 1+1d2
+COLOR WHITE
+DODGE 10+0d1
+VAL 199+0d1
+DAM 0+0d1
+DEF 100+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+Sailor Moon's Moon Tiara.  Maybe you can use it to do Moon Tiara Action?  But
+she's probably looking for it.
+.
+ATTR 200+0d1
+END
+
+BEGIN OBJECT
+NAME a cloak of invisibility
+LVL 4
+TYPE CLOAK
+VAL 10000+5d1000
+DESC
+One of the Deathly Hallows, this cloak grants the wearer invisibility.  Last
+know to be the property of the Boy Who Lived.
+.
+WEIGHT 1+0d1
+DODGE 24+5d4
+DEF 0+0d1
+HIT 0+0d1
+ATTR 0+0d1
+DAM 0+0d1
+SPEED 0+0d1
+COLOR CYAN
+END
+
+BEGIN OBJECT
+NAME old cloak
+TYPE CLOAK
+VAL 100+5d1
+DESC
+Should keep you warm.
+.
+WEIGHT 1+0d1
+DODGE 2+2d1
+DEF 0+2d2
+HIT 0+0d1
+ATTR 0+0d1
+DAM 0+0d1
+SPEED 4+0d1
+COLOR BLACK
+END
+
+BEGIN OBJECT
+NAME Leather gloves
+DESC
+They're a bit worn.
+.
+TYPE GLOVES
+COLOR GREEN
+WEIGHT 5+0d1
+HIT 1+0d1
+ATTR 0+0d1
+VAL 1+2d4
+DAM 0+0d1
+DODGE 0+3d5
+DEF 8+8d3
+SPEED 2+3d1
+END
+
+BEGIN OBJECT
+NAME iron bracers
+LVL 1
+DESC
+This should protect you wrists.
+.
+TYPE GLOVES
+COLOR BLACK
+WEIGHT 10+0d1
+HIT 0+0d1
+ATTR 0+0d1
+VAL 10+2d4
+DAM 0+0d1
+DODGE 0+1d4
+DEF 18+8d2
+SPEED 0+0d1
+END
+
+BEGIN OBJECT
+NAME Steel grieves
+HIT 0+2d1
+DAM 0+3d2
+DODGE 0+0d1
+SPEED -1+0d1
+ATTR 0+0d1
+VAL 25+9d1
+DEF 30+7d1
+DESC
+Slightly damaged and covered in blood. Nice.
+.
+TYPE BOOTS
+COLOR MAGENTA
+WEIGHT 10+2d2
+END
+
+BEGIN OBJECT
+NAME leather boots
+HIT 1+3d1
+DAM 0+3d2
+DODGE 0+4d2
+SPEED 2+0d1
+ATTR 0+0d1
+VAL 2+9d1
+DEF 3+7d1
+DESC
+They're boots, that's for sure.
+.
+TYPE BOOTS
+COLOR GREEN
+WEIGHT 1+2d2
+END
+
+BEGIN OBJECT
+NAME Ring of valor
+LVL 2
+TYPE RING
+WEIGHT 1+0d1
+COLOR MAGENTA
+DODGE 1+6d5
+VAL 250+2d35
+DEF 0+6d8
+ATTR 0+0d1
+HIT 1+3d5
+DAM 2+8d6
+SPEED 0+2d1
+DESC
+A ring forged in the dwarf city of Ironforge, it is said to bestow strength 
+and courage to its bearer. 
+.
+END
+
+BEGIN OBJECT
+NAME the One Ring
+LVL 5
+TYPE RING
+WEIGHT 1+0d1
+COLOR YELLOW
+DODGE 50+6d8
+VAL 1000000+2d1000000
+DEF 50+6d8
+ATTR 0+0d1
+HIT 10+2d5
+DAM 10+12d55
+SPEED 25+5d5
+DESC
+The One Ring to rule them all... and in the darkness bind them.  Created by
+Sauron as a tool in his quest to dominate Middle Earth.  It draws the dark
+sorcerer's eye upon its wearer.
+.
+END
+
+BEGIN OBJECT
+NAME Amulet of the Brotherhood
+LVL 2
+DESC
+The emblem of the Brotherhood is branded upon the front. Looking at it makes 
+you feel uneasy.
+.
+TYPE AMULET
+COLOR RED
+WEIGHT 2+0d1
+HIT 8+0d1
+ATTR 10+12d9
+VAL 1650+2d100
+DAM 4+3d1
+DODGE 0+2d5
+DEF 1+0d3
+SPEED 8+2d1
+END
+
+BEGIN OBJECT
+NAME Golden amulet
+LVL 1
+DESC
+Studded with a small jewels, it shines brightly.
+.
+TYPE AMULET
+COLOR YELLOW
+WEIGHT 2+0d1
+HIT 2+0d1
+ATTR 10+1d2
+VAL 150+4d9
+DAM 4+0d1
+DODGE 0+2d2
+DEF 1+0d1
+SPEED 4+0d1
+END
+
+BEGIN OBJECT
+NAME a torch
+TYPE LIGHT
+WEIGHT 2+1d2
+COLOR BLACK
+DODGE 0+0d1
+VAL 0+1d3
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A short wooden stick topped with an oil-soaked cloth, perfect for lighting
+your way through the dungeon.
+.
+ATTR 0+1d3
+END
+
+BEGIN OBJECT
+NAME a Wicked Lasers(R) Torch
+LVL 3
+TYPE LIGHT
+WEIGHT 1+1d2
+COLOR BLACK
+DODGE 0+0d1
+VAL 199+0d1
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+From the makers of the world's most refined lasers, comes the ultimate in
+handheld flashlights. The Flashtorch is a compact, portable searchlight that
+is capable of producing an incredible 4100 lumens of intense white light. Use
+this power to guide your way home, light a fire, or even fry an egg!
+.
+ATTR 200+0d1
+END
+
+BEGIN OBJECT
+NAME Scroll of Wisdom
+LVL 1
+TYPE SCROLL 
+WEIGHT 1+0d1
+COLOR YELLOW
+DODGE 0+0d0
+VAL 21+9d4
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A scroll inscribed with numerous runes of Wisdom. It is said that the runes 
+can teach the able-minded a spell of healing.
+.
+ATTR 0+16d2
+END
+
+BEGIN OBJECT
+NAME Scroll of Fire
+TYPE SCROLL 
+WEIGHT 1+0d1
+COLOR RED
+DODGE 0+0d0
+VAL 21+9d4
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A scroll inscribed with runes of Fire. It glows with a brilliant red.
+.
+ATTR 3+12d2
+END
+
+BEGIN OBJECT
+NAME War and Peace
+TYPE BOOK
+WEIGHT 2+0d1
+COLOR RED
+DODGE 0+0d0
+VAL 12+23d89
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+“The strongest of all warriors are these two — Time and Patience.”
+.
+ATTR 3+8d3
+END
+
+BEGIN OBJECT
+NAME strangely colored flask
+LVL 2
+TYPE FLASK
+WEIGHT 1+0d1
+COLOR RED BLUE
+DODGE 0+0d0
+VAL 2+100d8
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A magical potion that can grant the consumer immortaility... or instant 
+death...
+.
+ATTR 0+10000d1
+END
+
+BEGIN OBJECT
+NAME Elixer of Accuracy
+TYPE FLASK
+WEIGHT 1+0d1
+COLOR GREEN
+DODGE 0+0d0
+VAL 0+10d3
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A potion that grants the user improved accuracy when attacking.
+.
+ATTR 0+6d4
+END
+
+BEGIN OBJECT
+NAME Mysterious potion
+TYPE FLASK
+WEIGHT 1+0d1
+COLOR YELLOW
+DODGE 0+0d0
+VAL 0+10d3
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A potion. Wonder what it does? 
+.
+ATTR 1+3d2
+END
+
+BEGIN OBJECT
+NAME Gold
+TYPE GOLD
+WEIGHT 1+0d1
+COLOR YELLOW
+DODGE 0+0d0
+VAL 2+10d24
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A valuable currency.
+.
+ATTR 0+0d1
+END
+
+BEGIN OBJECT
+NAME dull arrows
+TYPE AMMUNITION
+WEIGHT 2+0d1
+COLOR CYAN
+DODGE 0+0d0
+VAL 0+4d4
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A large bundle of arrows.
+.
+ATTR 0+41d3
+END
+
+BEGIN OBJECT
+NAME soggy bread
+TYPE FOOD
+WEIGHT 2+0d1
+COLOR YELLOW
+DODGE 0+0d0
+VAL 0+4d6
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+Doesn't look very appetizing.
+.
+ATTR 0+16d3
+END
+
+BEGIN OBJECT
+NAME Lamb chop
+TYPE FOOD
+WEIGHT 6+2d1
+COLOR RED
+DODGE 0+0d0
+VAL 0+9d6
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+They're slightly old, but it might be the best meal you've had in a while.
+.
+ATTR 0+26d9
+END
+
+BEGIN OBJECT
+NAME Mana spring water
+TYPE WATER
+WEIGHT 3+0d1
+COLOR CYAN
+DODGE 0+0d0
+VAL 0+4d8
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+A duneon dwelling mage's fantasy water.
+.
+ATTR 20+36d6
+END
+
+BEGIN OBJECT
+NAME dirty water
+TYPE WATER
+WEIGHT 2+0d1
+COLOR CYAN
+DODGE 0+0d0
+VAL 0+2d2
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+0d1
+DESC
+Dungeon dwellers aren't picky.
+.
+ATTR 0+16d3
+END
+
+BEGIN OBJECT
+NAME Magic wand
+TYPE WAND
+WEIGHT 1+2d1
+COLOR YELLOW
+DODGE 0+0d0
+VAL 4+29d6
+DAM 0+0d1
+DEF 0+0d1
+HIT 0+0d1
+SPEED 0+2d1
+DESC
+It can be used to cast spells, if you know how to that is.
+.
+ATTR 0+20d2
+END

@@ -1,5 +1,11 @@
 ########## README ##########
 
+READ BEFORE ATTEMPTING TO BUILD --
+ - Ncurses is required to compile (check in /usr/include/). If you don't have 
+   it, search online for an installation guide for your distribution
+ - Move the temp folder (found in source/) into your home directory and name
+   it .rlg327 so that the path to it is ~/.rlg327/
+
 Runnning arguments --
  --nummon or -m to change the number of monsters loaded
  --items or -i to change the number of items loaded

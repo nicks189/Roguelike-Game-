@@ -12,6 +12,7 @@ class dice {
     int base;
     int number;
     int sides;  
+
   public: 
     dice() : base(0), number(0), sides(0) {} 
     dice(int b, int n, int s) : base(b), number(n), sides(s) {}

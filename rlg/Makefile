@@ -35,7 +35,7 @@ $(BUILDDIR)/%.o: $(SOURCE)/%.cpp
 
 clean: 
 	@$(ECHO) Removing all generated files
-	@$(RM) build/*.o build/*.d $(BIN) TAGS gmon.out core vgcore.*
+	@$(RM) build/*.o build/*.d $(BIN) TAGS gmon.out core compile_commands.json vgcore.*
 
 clobber: clean
 	@$(ECHO) Removing backup files
