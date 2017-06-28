@@ -12,7 +12,7 @@ typedef struct dungeon _dungeon;
 using std::string;
 
 enum displayMode {
-  MAP_MODE, 
+  MAP_MODE,
   INVENTORY_MODE,
   EQUIPMENT_MODE,
   WEAR_MODE,
@@ -55,7 +55,7 @@ class cursesDisplay : public abstractDisplay {
     ~cursesDisplay();
     int displayMenu();
     void displayMap();
-    void displayInventory(displayMode mode); 
+    void displayInventory(displayMode mode);
     void displayItemDescription(item *i);
     void displayCharacterStats();
     void displayRangedAttack(displayMode);
@@ -65,6 +65,10 @@ class cursesDisplay : public abstractDisplay {
     void endGameScreen(int mode);
 };
 
+/* Not currently implemented. Will be added to
+ * use the SFML 2D graphics library to added 
+ * 8-bit graphics overlay
+ */
 class sfmlDisplay : public abstractDisplay {
   private:
     inline int inLosRange(int x, int y);
@@ -73,7 +77,7 @@ class sfmlDisplay : public abstractDisplay {
     ~sfmlDisplay();
     int displayMenu();
     void displayMap();
-    void displayInventory(displayMode mode); 
+    void displayInventory(displayMode mode);
     void displayItemDescription(item *i);
     void displayCharacterStats();
     void displayRangedAttack(displayMode);

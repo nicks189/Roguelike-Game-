@@ -21,7 +21,7 @@ class effect {
     char **renderArr;
     int damage;
 
-    /* Only allow one color per effect for now */
+    // Only allowing one color per effect 
     int color;
   public:
     effect(_dungeon *dun);

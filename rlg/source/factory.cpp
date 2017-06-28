@@ -5,24 +5,23 @@
 
 inline int setcolor(string color) {
   if(color == "RED")
-    return COLOR_RED;  
+    return COLOR_RED;
   else if(color == "GREEN")
-    return COLOR_GREEN;  
+    return COLOR_GREEN;
   else if(color == "YELLOW")
-    return COLOR_YELLOW;  
+    return COLOR_YELLOW;
   else if(color == "BLUE")
-    return COLOR_BLUE;  
+    return COLOR_BLUE;
   else if(color == "CYAN")
-    return COLOR_CYAN;  
+    return COLOR_CYAN;
   else if(color == "MAGENTA")
-    return COLOR_MAGENTA;  
-  else 
-    return COLOR_WHITE;  
+    return COLOR_MAGENTA;
+  else
+    return COLOR_WHITE;
 }
 
 inline int getabils(string a) {
   int t = 0;
-
   if(a == "PICKUP")
     t += 0x00000040;
   else if(a == "DESTROY")
@@ -37,7 +36,6 @@ inline int getabils(string a) {
     t += 0x00000002;
   else if(a == "SMART")
     t += 0x00000001;
-
   return t;
 }
 
@@ -82,7 +80,7 @@ inline objectType settype(string t) {
     return WAND_TYPE;
   else if(t == "CONTAINER")
     return CONTAINER_TYPE;
-  else 
+  else
     return INVALID_TYPE;
 }
 
@@ -92,14 +90,11 @@ characterFactory::characterFactory(_dungeon *dun) {
 
   if(d->custom) {
     path = "monster_desc.txt";
-  }
-
-  else {
+  } else {
     path = getenv("HOME");
     path.append("/.rlg327/monster_desc.txt");
   }
-
-  ifstream f(path); 
+  ifstream f(path);
   stringstream *ss;
   string buf;
 
@@ -113,21 +108,20 @@ characterFactory::characterFactory(_dungeon *dun) {
 
   ss = new stringstream();
   while(getline(f, buf)) {
-    if(buf == "BEGIN MONSTER") {} 
-    else if(buf == "") {}
-    else if(buf == "END") {
+    if(buf == "BEGIN MONSTER") {
+      // Do nothing
+    } else if(buf == "") {
+      // Do nothing
+    } else if(buf == "END") {
       //cout << endl;
       cvector.push_back(ss);
       ss = new stringstream();
-    }
-    else {
+    } else {
       *ss << buf << "\n";
     }
     buf = "";
   }
-
   delete ss;
-
   f.close();
 }
 
@@ -148,45 +142,39 @@ void *characterFactory::generateNext() {
   bool abilset = false;
   bool hpset = false;
   bool damset = false;
-  bool symbset = false; 
+  bool symbset = false;
   bool failed = false;
 
   while(*ss >> buf) {
-
     /* OPTIONAL ----       *
-     * Minimum spawn level * 
-     *                     */
-    if(buf == "LVL") { 
+     * Minimum spawn level *
+     */
+    if(buf == "LVL") {
       ss->get();
       *ss >> cbuf;
       c->setLevel(std::stoi(cbuf));
     }
-
     /* Name */
-    if(buf == "NAME") { 
+    if(buf == "NAME") {
       if(!nameset) {
         nameset = true;
         ss->get();
         getline(*ss, cbuf);
         c->setName(cbuf);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Symbol */
     else if(buf == "SYMB") {
       if(!symbset) {
         symbset = true;
         ss->get();
         c->setSymbol(ss->get());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Color */
     else if(buf == "COLOR") {
       if(!colorset) {
@@ -194,12 +182,10 @@ void *characterFactory::generateNext() {
         *ss >> cbuf;
         c->setColor(setcolor(cbuf));
         getline(*ss, cbuf);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Speed */
     else if(buf == "SPEED") {
       if(!speedset) {
@@ -210,25 +196,21 @@ void *characterFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setSpeed(d.roll());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Damage */
     else if(buf == "DAM") {
       if(!damset) {
@@ -239,25 +221,21 @@ void *characterFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d->setBase(atoi(cbuf.c_str()));  
+            d->setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d->setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d->setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d->setSides(atoi(cbuf.c_str()));
         c->setDamage(d);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Hitpoints */
     else if(buf == "HP") {
       if(!hpset) {
@@ -268,26 +246,22 @@ void *characterFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setHp(d.roll());
         c->setMaxHp(c->getHp());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Abilities */
     else if(buf == "ABIL") {
       if(!abilset) {
@@ -296,23 +270,17 @@ void *characterFactory::generateNext() {
         string t;
         stringstream sst;
         ss->get();
-
         getline(*ss, t);
-
         sst << t;
 
         while(sst >> cbuf) {
           a += getabils(cbuf);
         }
-
         c->setTraits(a);
-
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Description */
     else if(buf == "DESC") {
       if(!descset) {
@@ -326,13 +294,10 @@ void *characterFactory::generateNext() {
         t.pop_back();
         ss->get();
         c->setDesc(t);
-      }
-
-      else {
+      } else {
         failed = true;
       }
     }
-
     cbuf = "";
     buf = "";
   }
@@ -340,23 +305,18 @@ void *characterFactory::generateNext() {
   delete ss;
   cvector.pop_back();
 
-  if(nameset && descset && colorset && speedset && abilset 
+  if(nameset && descset && colorset && speedset && abilset
                          && hpset && damset && symbset && !failed) {
-
     if(d->level > 1) {
       c->setHit((10 * d->level) + DEFAULT_HIT);
       c->setDodge(5 * d->level);
     }
-
     if(c->getLevel() > 0) {
-      c->setHit(c->getHit() + (6 * c->getLevel())); 
-      c->setDodge(c->getDodge() + (3 * c->getLevel())); 
+      c->setHit(c->getHit() + (6 * c->getLevel()));
+      c->setDodge(c->getDodge() + (3 * c->getLevel()));
     }
-
     return c;
-  }
-
-  else {
+  } else {
     delete c;
     return nullptr;
   }
@@ -368,14 +328,12 @@ itemFactory::itemFactory(_dungeon *dun) {
 
   if(d->custom) {
     path = "object_desc.txt";
-  }
-
-  else {
+  } else {
     path = getenv("HOME");
     path.append("/.rlg327/object_desc.txt");
   }
 
-  ifstream f(path); 
+  ifstream f(path);
   stringstream *ss;
   string buf;
 
@@ -389,21 +347,20 @@ itemFactory::itemFactory(_dungeon *dun) {
 
   ss = new stringstream();
   while(getline(f, buf)) {
-    if(buf == "BEGIN OBJECT") {} 
-    else if(buf == "") {}
-    else if(buf == "END") {
+    if(buf == "BEGIN OBJECT") {
+      // Do nothing
+    } else if(buf == "") {
+      // Do nothing
+    } else if(buf == "END") {
       //cout << endl;
       cvector.push_back(ss);
       ss = new stringstream();
-    }
-    else {
+    } else {
       *ss << buf << "\n";
     }
     buf = "";
   }
-
   delete ss;
-
   f.close();
 }
 
@@ -414,14 +371,13 @@ void *itemFactory::generateNext() {
 
   c = new item(d);
   stringstream *ss = cvector.back();
-
   string buf;
   string cbuf;
   bool nameset = false;
   bool descset = false;
   bool typeset = false;
   bool colorset = false;
-  bool hitset = false; 
+  bool hitset = false;
   bool damset = false;
   bool dodgeset = false;
   bool defset = false;
@@ -432,29 +388,25 @@ void *itemFactory::generateNext() {
   bool failed = false;
 
   while(*ss >> buf) {
-
     /* OPTIONAL ----       *
-     * Minimum spawn level * 
+     * Minimum spawn level *
      *                     */
-    if(buf == "LVL") { 
+    if(buf == "LVL") {
       ss->get();
       *ss >> cbuf;
       c->setLevel(std::stoi(cbuf));
     }
-
     /* Name */
-    if(buf == "NAME") { 
+    if(buf == "NAME") {
       if(!nameset) {
         nameset = true;
         ss->get();
         getline(*ss, cbuf);
         c->setName(cbuf);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Description */
     else if(buf == "DESC") {
       if(!descset) {
@@ -468,13 +420,10 @@ void *itemFactory::generateNext() {
         t.pop_back();
         ss->get();
         c->setDesc(t);
-      }
-
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Type */
     else if(buf == "TYPE") {
       if(!typeset) {
@@ -483,12 +432,10 @@ void *itemFactory::generateNext() {
         c->setType(settype(cbuf));
         c->setSymbol(c->getType());
         getline(*ss, cbuf);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Color */
     else if(buf == "COLOR") {
       if(!colorset) {
@@ -496,12 +443,10 @@ void *itemFactory::generateNext() {
         *ss >> cbuf;
         c->setColor(setcolor(cbuf));
         getline(*ss, cbuf);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Hit */
     else if(buf == "HIT") {
       if(!hitset) {
@@ -512,25 +457,21 @@ void *itemFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setHit(d.roll());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Damage */
     else if(buf == "DAM") {
       if(!damset) {
@@ -541,25 +482,21 @@ void *itemFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d->setBase(atoi(cbuf.c_str()));  
+            d->setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d->setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d->setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d->setSides(atoi(cbuf.c_str()));
         c->setDamage(d);
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Dodge */
     else if(buf == "DODGE") {
       if(!dodgeset) {
@@ -570,25 +507,21 @@ void *itemFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setDodge(d.roll());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Defense */
     else if(buf == "DEF") {
       if(!defset) {
@@ -599,25 +532,21 @@ void *itemFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setDefense(d.roll());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Weight */
     else if(buf == "WEIGHT") {
       if(!weightset) {
@@ -628,25 +557,21 @@ void *itemFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setWeight(d.roll());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Speed */
     else if(buf == "SPEED") {
       if(!speedset) {
@@ -657,87 +582,71 @@ void *itemFactory::generateNext() {
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setSpeed(d.roll());
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     /* Attributes */
     else if(buf == "ATTR") {
       if(!attrset) {
         attrset = true;
-              
         dice d;
         char p;
 
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setAttribute(d.roll());
-
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
-    /* Value */ 
-    else if(buf == "VAL") { 
+    /* Value */
+    else if(buf == "VAL") {
       if(!valset) {
         valset = true;
-              
         dice d;
         char p;
 
         ss->get();
         while((p = ss->get()) != '\n') {
           if(p == '+') {
-            d.setBase(atoi(cbuf.c_str()));  
+            d.setBase(atoi(cbuf.c_str()));
             cbuf = "";
-          } 
-          else if(p == 'd') {
-            d.setNumber(atoi(cbuf.c_str())); 
+          } else if(p == 'd') {
+            d.setNumber(atoi(cbuf.c_str()));
             cbuf = "";
-          }
-          else {
+          } else {
             cbuf += p;
           }
         }
         d.setSides(atoi(cbuf.c_str()));
         c->setValue(d.roll());
-
-      }
-      else {
+      } else {
         failed = true;
       }
     }
-
     cbuf = "";
     buf = "";
   }
@@ -745,19 +654,14 @@ void *itemFactory::generateNext() {
   delete ss;
   cvector.pop_back();
 
-  if(nameset && descset && typeset && colorset && hitset 
-       && damset && dodgeset && defset 
-       && weightset && speedset 
+  if(nameset && descset && typeset && colorset && hitset
+       && damset && dodgeset && defset
+       && weightset && speedset
        && attrset && valset && !failed) {
-                                                    
     return c;
-  }
-
-  else {
+  } else {
     delete c;
     return nullptr;
   }
-  
   return nullptr;
 }
-

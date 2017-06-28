@@ -70,7 +70,7 @@ class dungeonclass {
     bool nofog;
     bool custom;
     uint8_t hardness[DUNGEON_Y][DUNGEON_X]; /* Hardness map for entire dungeon */
-    int num_rooms, nummon, numitems;
+    int numrooms, nummon, numitems;
     int level;
     int view_mode;
     long seed; 

@@ -8,7 +8,7 @@
 using std::vector;
 using std::stringstream;
 
-dungeonclass::dungeonclass() : nofog(false), custom(true), hardness(0), num_rooms(0),
+dungeonclass::dungeonclass() : nofog(false), custom(true), hardness(0), numrooms(0),
                      nummon(0), numitems(0), level(1), view_mode(CONTROL_MODE),
                      seed(time(NULL)), event_heap(), lcoords(0), rooms(), 
                      map(), char_grid(), item_grid(), tunnel_map(), non_tunnel_map(),
@@ -41,8 +41,8 @@ int dungeonclass::init() {
   }
 
   /* Make random number of rooms */
-  num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
-  rooms = (room_t *) malloc(sizeof(*rooms) * num_rooms);
+  numrooms = rand_range(MIN_ROOMS, MAX_ROOMS);
+  rooms = (room_t *) malloc(sizeof(*rooms) * numrooms);
 
   /* clears the dungeon and sets all terrain to ter_wall */
   init_dungeon(0);
@@ -516,7 +516,7 @@ void dungeonclass::empty_dungeon() {
 int dungeonclass:in_room(int16_t y, int16_t x)
 {
   int i;
-  for (i = 0; i < num_rooms; i++) {
+  for (i = 0; i < numrooms; i++) {
     if ((x >= rooms[i].x) &&
         (x < (rooms[i].y + d->rooms[i].length)) &&
         (y >= rooms[i].y) &&
@@ -530,7 +530,7 @@ int dungeonclass:in_room(int16_t y, int16_t x)
 void dungeonclass::make_rooms() {
   int i;
 
-  for(i = 0; i < num_rooms; i++) {
+  for(i = 0; i < numrooms; i++) {
     while(true) {
       bool bool_tmp = true;
 
@@ -573,7 +573,7 @@ void dungeonclass::fill_rooms() {
   int i;
   int x, y;
 
-  for(i = 0; i < d->num_rooms; i++) {
+  for(i = 0; i < d->numrooms; i++) {
     uint8_t y1 = rooms[i].y;
     uint8_t x1 = rooms[i].x;
     uint8_t y2 = rooms[i].y + rooms[i].height;
@@ -612,8 +612,8 @@ int dungeonclass::create_cycle()
   pair_t e1, e2;
   p = q = 0;
 
-  for (i = max = 0; i < num_rooms - 1; i++) {
-    for (j = i + 1; j < num_rooms; j++) {
+  for (i = max = 0; i < numrooms - 1; i++) {
+    for (j = i + 1; j < numrooms; j++) {
       tmp = (((rooms[i].x - rooms[j].x)  *
               (rooms[i].x - rooms[j].x)) +
              ((rooms[i].y - rooms[j].y)  *
@@ -646,7 +646,7 @@ int dungeonclass::create_cycle()
 
 void dungeonclass::connect_rooms() {
   int i;
-  for(i = 0; i < num_rooms - 1; i++) {
+  for(i = 0; i < numrooms - 1; i++) {
     pair_t e1, e2;
 
     e1[dim_x] = rand_range(d->rooms[i].x, rooms[i].length - 1 + rooms[i].x);
@@ -723,7 +723,7 @@ void dungeonclass::load_dungeon() {
 }
 
 int dungeonclass::read_from_file(const char *path) {
-  num_rooms = 0;
+  numrooms = 0;
   FILE *fp;
 
   if(!(fp = fopen(path, "rb"))) {
@@ -753,15 +753,15 @@ int dungeonclass::read_from_file(const char *path) {
   uint32_t index = 0;
 
   while(fread(rooms_temp, sizeof(rooms_temp), 1, fp) == 1) {
-    if(num_rooms >= MAX_ROOMS) {
-      rooms = (room_t *) realloc(rooms, sizeof(rooms) * num_rooms);
+    if(numrooms >= MAX_ROOMS) {
+      rooms = (room_t *) realloc(rooms, sizeof(rooms) * numrooms);
     }
     rooms[index].x = rooms_temp[0];
     rooms[index].y = rooms_temp[1];
     rooms[index].length = rooms_temp[2];
     rooms[index].height = rooms_temp[3];
     index++;
-    num_rooms++;
+    numrooms++;
   }
 
   fclose(fp);
@@ -775,7 +775,7 @@ void dungeonclass::save_to_file(const char* path) {
   fp = fopen(path, "wb");
   unsigned char f_marker[12] = {'R','L','G','3','2','7','-','S','2','0','1','7'};
   uint32_t f_version = 0;
-  uint32_t f_size = 12 + 4 + 4 + 160 * 105 + 4 * num_rooms;
+  uint32_t f_size = 12 + 4 + 4 + 160 * 105 + 4 * numrooms;
   int i;
 
   /* check endianess */
@@ -790,7 +790,7 @@ void dungeonclass::save_to_file(const char* path) {
   fwrite(&f_size, sizeof(int32_t), 1, fp);
   fwrite(hardness, sizeof(uint8_t), 160 * 105, fp);
 
-  for(i = 0; i < num_rooms; i++) {
+  for(i = 0; i < numrooms; i++) {
     uint8_t to_mem[4];
     to_mem[0] = rooms[i].x;
     to_mem[1] = rooms[i].y;
@@ -806,7 +806,7 @@ void dungeonclass::save_to_file(const char* path) {
 void dungeonclass::delete_dungeon() {
   int i, j;
 
-  for(i = 0; i < num_rooms; i++) {
+  for(i = 0; i < numrooms; i++) {
     rooms[i].x = 0;
     rooms[i].y = 0;
     rooms[i].length = 0;

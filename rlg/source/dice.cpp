@@ -3,7 +3,6 @@
 int dice::roll() const {
   int total;
   int i;
-
   total = base;
 
   if(sides) {
@@ -11,7 +10,6 @@ int dice::roll() const {
       total += rand_range(1, sides);
     }
   }
-
   return total;
 }
 

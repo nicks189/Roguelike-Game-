@@ -6,6 +6,7 @@
 #include "../include/projectile.h"
 #include "../include/effect.h"
 
+// Needs to be updated
 pc::pc(_dungeon *dun, int16_t *loc) : character(dun), inventory() {
   name = "Player";
   description = "A brave adventurer";
@@ -52,7 +53,6 @@ void pc::place(_dungeon *dun) {
   prev[dim_y] = y;
   next[dim_x] = x;
   next[dim_y] = y;
-
   initMap();
   updateMap();
 }
@@ -60,22 +60,20 @@ void pc::place(_dungeon *dun) {
 int pc::attackPos() {
   if(char_gridpair(next) != nullptr) {
     npc *n = (npc *) char_gridpair(next);
-
-    /* 
+    /*
      * First determine hit or miss --
      *
-     * Considering 70 as default hit chance, hit 
-     * rating is added to this and then subtracted 
-     * by targets defense rating. This is the hit 
-     * chance.        
+     * Considering 70 as default hit chance, hit
+     * rating is added to this and then subtracted
+     * by targets defense rating. This is the hit
+     * chance.
      * */
     int temphit = hit;
-    temphit -= n->getDodge(); 
+    temphit -= n->getDodge();
 
     if(temphit < rand_range(0, 100)) {
       d->disp_msg = "Attack missed ";
-      d->disp_msg.append(n->getName()); 
-
+      d->disp_msg.append(n->getName());
       next[dim_x] = x;
       next[dim_y] = y;
       return 1;
@@ -84,36 +82,36 @@ int pc::attackPos() {
     /* Rolls for damage */
     int dmg = 0;
     dmg += strength;
-    if(equipment.weapon == nullptr) 
+    if(equipment.weapon == nullptr)
       dmg += damage->roll();
-    else 
-      dmg += equipment.weapon->getDamage()->roll(); 
-    if(equipment.offhand != nullptr) 
-      dmg += equipment.offhand->getDamage()->roll(); 
-    if(equipment.ranged != nullptr) 
-      dmg += equipment.ranged->getDamage()->roll(); 
-    if(equipment.armor != nullptr) 
-      dmg += equipment.armor->getDamage()->roll(); 
-    if(equipment.helmet != nullptr) 
-      dmg += equipment.helmet->getDamage()->roll(); 
-    if(equipment.cloak != nullptr) 
-      dmg += equipment.cloak->getDamage()->roll(); 
-    if(equipment.gloves != nullptr) 
-      dmg += equipment.gloves->getDamage()->roll(); 
-    if(equipment.boots != nullptr) 
-      dmg += equipment.boots->getDamage()->roll(); 
-    if(equipment.amulet != nullptr) 
-      dmg += equipment.amulet->getDamage()->roll(); 
-    if(equipment.light != nullptr) 
-      dmg += equipment.light->getDamage()->roll(); 
-    if(equipment.ring_one != nullptr) 
-      dmg += equipment.ring_one->getDamage()->roll(); 
-    if(equipment.ring_two != nullptr) 
-      dmg += equipment.ring_two->getDamage()->roll(); 
+    else
+      dmg += equipment.weapon->getDamage()->roll();
+    if(equipment.offhand != nullptr)
+      dmg += equipment.offhand->getDamage()->roll();
+    if(equipment.ranged != nullptr)
+      dmg += equipment.ranged->getDamage()->roll();
+    if(equipment.armor != nullptr)
+      dmg += equipment.armor->getDamage()->roll();
+    if(equipment.helmet != nullptr)
+      dmg += equipment.helmet->getDamage()->roll();
+    if(equipment.cloak != nullptr)
+      dmg += equipment.cloak->getDamage()->roll();
+    if(equipment.gloves != nullptr)
+      dmg += equipment.gloves->getDamage()->roll();
+    if(equipment.boots != nullptr)
+      dmg += equipment.boots->getDamage()->roll();
+    if(equipment.amulet != nullptr)
+      dmg += equipment.amulet->getDamage()->roll();
+    if(equipment.light != nullptr)
+      dmg += equipment.light->getDamage()->roll();
+    if(equipment.ring_one != nullptr)
+      dmg += equipment.ring_one->getDamage()->roll();
+    if(equipment.ring_two != nullptr)
+      dmg += equipment.ring_two->getDamage()->roll();
 
     d->disp_msg = "";
-    d->disp_msg.append("You hit "); 
-    d->disp_msg.append(char_gridpair(next)->getName()); 
+    d->disp_msg.append("You hit ");
+    d->disp_msg.append(char_gridpair(next)->getName());
     d->disp_msg.append(" for ");
     d->disp_msg.append(std::to_string(dmg));
 
@@ -127,29 +125,24 @@ int pc::attackPos() {
 
       score += 100 * (n->getLevel() + 1);
 
-      n->kill(); 
+      n->kill();
       if(n->getItem() != nullptr) {
         if(d->item_grid[n->getY()][n->getX()] == nullptr) {
           d->item_grid[n->getY()][n->getX()] = n->getItem();
           n->setItem(nullptr);
-        }
-        else {
+        } else {
           delete n->getItem();
           n->setItem(nullptr);
         }
       }
-
       char_gridpair(next) = nullptr;
-    }
-
-    else {
-      d->disp_msg.append("-");  
+    } else {
+      d->disp_msg.append("-");
       d->disp_msg.append(n->getName());
       d->disp_msg.append(" has ");
       d->disp_msg.append(std::to_string(n->getHp()));
       d->disp_msg.append(" remaining");
     }
-
     next[dim_x] = x;
     next[dim_y] = y;
   }
@@ -187,8 +180,7 @@ inline int pc::command(int cmd, displayMode mode) {
 inline int pc::statsCommand(int cmd) {
   if(cmd == QUIT_GAME) {
     return end_game(d, BOTH_MODE);
-  }
-  else if(cmd == STATS_SCREEN || CONTROL_MODE) {
+  } else if(cmd == STATS_SCREEN || CONTROL_MODE) {
     return 0;
   }
   return 1;
@@ -197,8 +189,7 @@ inline int pc::statsCommand(int cmd) {
 inline int pc::inventoryCommand(int cmd) {
   if(cmd == INVENTORY_SCREEN || cmd == CONTROL_MODE) {
     return 0;
-  } 
-
+  }
   return 1;
 }
 
@@ -211,7 +202,6 @@ inline int pc::equipmentCommand(int cmd) {
 
 inline int pc::wearCommand(int cmd) {
   int index = INT_MAX;
-
   if(cmd == WEAR_SCREEN || cmd == CONTROL_MODE)
     return 0;
   else if(cmd == SLOT0)
@@ -234,7 +224,7 @@ inline int pc::wearCommand(int cmd) {
     index = 8;
   else if(cmd == SLOT9)
     index = 9;
-  else 
+  else
     return 1;
 
   if(inventory[index] == nullptr) {
@@ -246,7 +236,7 @@ inline int pc::wearCommand(int cmd) {
   inventory[index] = temp;
   d->display->displayInventory(WEAR_MODE);
 
-  return 1; 
+  return 1;
 }
 
 inline int pc::takeOffCommand(int cmd) {
@@ -259,68 +249,53 @@ inline int pc::takeOffCommand(int cmd) {
 
   if(cmd == TAKEOFF_SCREEN || cmd == CONTROL_MODE) {
     return 0;
-  }
-  else if(cmd == EQUIPA && equipment.weapon != nullptr) {
+  } else if(cmd == EQUIPA && equipment.weapon != nullptr) {
     inventory[index] = equipment.weapon;
     equipment.weapon = nullptr;
-  }
-  else if(cmd == EQUIPB && equipment.offhand!= nullptr) {
+  } else if(cmd == EQUIPB && equipment.offhand!= nullptr) {
     inventory[index] = equipment.offhand;
     equipment.offhand = nullptr;
-  }
-  else if(cmd == EQUIPC && equipment.ranged != nullptr) {
+  } else if(cmd == EQUIPC && equipment.ranged != nullptr) {
     inventory[index] = equipment.ranged;
     equipment.ranged = nullptr;
-  }
-  else if(cmd == EQUIPD && equipment.armor != nullptr) {
+  } else if(cmd == EQUIPD && equipment.armor != nullptr) {
     inventory[index] = equipment.armor;
     equipment.armor = nullptr;
-  }
-  else if(cmd == EQUIPE && equipment.helmet != nullptr) {
+  } else if(cmd == EQUIPE && equipment.helmet != nullptr) {
     inventory[index] = equipment.helmet;
     equipment.helmet = nullptr;
-  }
-  else if(cmd == EQUIPF && equipment.cloak != nullptr) {
+  } else if(cmd == EQUIPF && equipment.cloak != nullptr) {
     inventory[index] = equipment.cloak;
     equipment.cloak = nullptr;
-  }
-  else if(cmd == EQUIPG && equipment.gloves != nullptr) {
+  } else if(cmd == EQUIPG && equipment.gloves != nullptr) {
     inventory[index] = equipment.gloves;
     equipment.gloves = nullptr;
-  }
-  else if(cmd == EQUIPH && equipment.boots != nullptr) {
+  } else if(cmd == EQUIPH && equipment.boots != nullptr) {
     inventory[index] = equipment.boots;
     equipment.boots = nullptr;
-  }
-  else if(cmd == EQUIPI && equipment.amulet != nullptr) {
+  } else if(cmd == EQUIPI && equipment.amulet != nullptr) {
     inventory[index] = equipment.amulet;
     equipment.amulet = nullptr;
-  }
-  else if(cmd == EQUIPJ && equipment.light != nullptr) {
+  } else if(cmd == EQUIPJ && equipment.light != nullptr) {
     inventory[index] = equipment.light;
-    lightRadius -= equipment.light->getAttribute(); 
+    lightRadius -= equipment.light->getAttribute();
     equipment.light = nullptr;
-  }
-  else if(cmd == EQUIPK && equipment.ring_one != nullptr) {
+  } else if(cmd == EQUIPK && equipment.ring_one != nullptr) {
     inventory[index] = equipment.ring_one;
     equipment.ring_one = nullptr;
-  }
-  else if(cmd == EQUIPL && equipment.ring_two != nullptr) {
+  } else if(cmd == EQUIPL && equipment.ring_two != nullptr) {
     inventory[index] = equipment.ring_two;
     equipment.ring_two = nullptr;
-  }
-  else if(cmd == EQUIPM && equipment.wand != nullptr) {
+  } else if(cmd == EQUIPM && equipment.wand != nullptr) {
     inventory[index] = equipment.wand;
     mana -= equipment.wand->getAttribute();
     maxMana -= equipment.wand->getAttribute();
     intellect -= equipment.wand->getAttribute();
     equipment.wand = nullptr;
-  }
-  else if(cmd == EQUIPN && equipment.ammunition != nullptr) {
+  } else if(cmd == EQUIPN && equipment.ammunition != nullptr) {
     inventory[index] = equipment.ammunition;
     equipment.ammunition = nullptr;
-  }
-  else  {
+  } else  {
     return 1;
   }
 
@@ -334,9 +309,8 @@ inline int pc::takeOffCommand(int cmd) {
 
   d->disp_msg = "Took off ";
   d->disp_msg.append(inventory[index]->getName());
-
   d->display->displayInventory(TAKEOFF_MODE);
-  return 1; 
+  return 1;
 }
 
 inline int pc::dropCommand(int cmd) {
@@ -370,14 +344,14 @@ inline int pc::dropCommand(int cmd) {
     index = 8;
   else if(cmd == SLOT9)
     index = 9;
-  else 
+  else
     return 1;
 
   if(inventory[index] == nullptr) {
     return 1;
   }
 
-  d->item_grid[y][x] = inventory[index]; 
+  d->item_grid[y][x] = inventory[index];
   inventory[index] = nullptr;
 
   return 0;
@@ -408,19 +382,18 @@ inline int pc::expungeCommand(int cmd) {
     index = 8;
   else if(cmd == SLOT9)
     index = 9;
-  else 
+  else
     return 1;
 
   if(inventory[index] == nullptr) {
     return 1;
   }
-  
+
   delete inventory[index];
   inventory[index] = nullptr;
-
   d->display->displayInventory(EXPUNGE_MODE);
 
-  return 1;  
+  return 1;
 }
 
 inline int pc::inspectCommand(int cmd) {
@@ -448,7 +421,7 @@ inline int pc::inspectCommand(int cmd) {
     index = 8;
   else if(cmd == SLOT9)
     index = 9;
-  else 
+  else
     return 1;
 
   if(inventory[index] == nullptr) {
@@ -457,41 +430,39 @@ inline int pc::inspectCommand(int cmd) {
 
   d->display->displayItemDescription(inventory[index]);
   getch();
-
   return 0;
 }
 
 int pc::rangedAttack(projectile *p, int cmd) {
   int dir = INT_MAX;
 
-  if(cmd == QUIT_GAME)
+  if(cmd == QUIT_GAME) {
     return end_game(d, BOTH_MODE);
-  else if(cmd == RANGED_SCREEN || cmd == CONTROL_MODE) {
+  } else if(cmd == RANGED_SCREEN || cmd == CONTROL_MODE) {
     d->disp_msg = d->level_msg;
     return 0;
-  }
-  else if(cmd == MV_UP_LEFT_1 || cmd == MV_UP_LEFT_2)
+  } else if(cmd == MV_UP_LEFT_1 || cmd == MV_UP_LEFT_2) {
     dir = NW;
-  else if(cmd == MV_UP_RIGHT_1 || cmd == MV_UP_RIGHT_2)
+  } else if(cmd == MV_UP_RIGHT_1 || cmd == MV_UP_RIGHT_2) {
     dir = NE;
-  else if(cmd == MV_UP_1 || cmd == MV_UP_2)
+  } else if(cmd == MV_UP_1 || cmd == MV_UP_2) {
     dir = N;
-  else if(cmd == MV_LEFT_1 || cmd == MV_LEFT_2)
+  } else if(cmd == MV_LEFT_1 || cmd == MV_LEFT_2) {
     dir = W;
-  else if(cmd == MV_RIGHT_1 || cmd == MV_RIGHT_2)
+  } else if(cmd == MV_RIGHT_1 || cmd == MV_RIGHT_2) {
     dir = E;
-  else if(cmd == MV_DWN_LEFT_1 || cmd == MV_DWN_LEFT_2)
+  } else if(cmd == MV_DWN_LEFT_1 || cmd == MV_DWN_LEFT_2) {
     dir = SW;
-  else if(cmd == MV_DWN_RIGHT_1 || cmd == MV_DWN_RIGHT_2)
+  } else if(cmd == MV_DWN_RIGHT_1 || cmd == MV_DWN_RIGHT_2) {
     dir = SE;
-  else if(cmd == MV_DWN_1 || cmd == MV_DWN_2)
+  } else if(cmd == MV_DWN_1 || cmd == MV_DWN_2) {
     dir = S;
-  else 
+  } else {
     return 1;
+  }
 
   p->setDirection(dir);
   d->display->displayProjectile(p);
-
   return 0;
 }
 
@@ -503,19 +474,16 @@ inline int pc::rangedCommand(int cmd) {
   if(cmd == RANGED_SCREEN || cmd == CONTROL_MODE) {
     return 0;
   }
-
   /* Ranged weapon */
   else if(cmd == SLOT1) {
     if(equipment.ranged == nullptr) {
-      d->disp_msg = "You don't have a ranged weapon!"; 
+      d->disp_msg = "You don't have a ranged weapon!";
       return 0;
-    }
-    else if(equipment.ammunition == nullptr) {
-      d->disp_msg = "Out of ammo"; 
+    } else if(equipment.ammunition == nullptr) {
+      d->disp_msg = "Out of ammo";
       return 0;
-    }
-    else if(equipment.ammunition->getAttribute() < 1) {
-      d->disp_msg = "Out of ammo"; 
+    } else if(equipment.ammunition->getAttribute() < 1) {
+      d->disp_msg = "Out of ammo";
       return 0;
     }
 
@@ -523,25 +491,21 @@ inline int pc::rangedCommand(int cmd) {
     equipment.ammunition->setAttribute(equipment.ammunition->getAttribute() - 1);
     color = equipment.ammunition->getColor();
 
-    p = new projectile(d, x, y); 
+    p = new projectile(d, x, y);
     p->setDamage(dmg);
     p->setColor(color);
-
     d->disp_msg = "You loose an arrow";
   }
-
   /* Poison Ball */
   else if(cmd == SLOT2) {
     if(mana < 20) {
       d->disp_msg = "Not enough mana";
       return 0;
     }
-
     if(mana > 0)
       mana -= 20;
-    else 
+    else
       mana = 0;
-
     dmg = 20;
     dmg += (intellect / 2);
     color = COLOR_GREEN;
@@ -555,22 +519,18 @@ inline int pc::rangedCommand(int cmd) {
     p->setEffect(e);
     p->setDamage(dmg);
     p->setColor(color);
-  
     d->disp_msg = "You cast a poison ball";
   }
-
   /* Fireball */
   else if(cmd == SLOT3 && fireball_is_learned) {
     if(mana < 20) {
       d->disp_msg = "Not enough mana";
       return 0;
     }
-
     if(mana > 0)
       mana -= 20;
-    else 
+    else
       mana = 0;
-
     dmg = 10;
     dmg += (intellect / 2);
     color = COLOR_RED;
@@ -584,44 +544,34 @@ inline int pc::rangedCommand(int cmd) {
     p->setEffect(e);
     p->setDamage(dmg);
     p->setColor(color);
-  
     d->disp_msg = "You cast a fireball";
   }
-
   /* Heal */
   else if(cmd == SLOT4 && heal_is_learned) {
     if(mana < 30) {
       d->disp_msg = "Not enough mana";
       return 0;
-    } 
-
+    }
     if(hp == maxhp)
       return 1;
-
     if(mana > 0)
       mana -= 30;
-    else 
+    else
       mana = 0;
 
     int htemp = 20 + (intellect / 2);
     hp += htemp;
-
     if(hp > maxhp)
       hp = maxhp;
-
     d->disp_msg = "Healed yourself for ";
     d->disp_msg.append(std::to_string(htemp));
     return 0;
-  }
-  
-  else {
+  } else {
     return 1;
   }
 
-  
   d->display->displayRangedAttack(RANGED_ATTACK_MODE);
   while(rangedAttack(p, getch())) {}
-
   return 0;
 }
 
@@ -634,7 +584,7 @@ int pc::move() {
 }
 
 int pc::move(int move) {
-  /*                 * 
+  /*                 *
    *                 *
    * Display screens *
    *                 *
@@ -644,57 +594,40 @@ int pc::move(int move) {
     d->display->displayInventory(INVENTORY_MODE);
     while(command(getch(), INVENTORY_MODE)) {}
     return 1;
-  }
-
-  else if(move == EQUIPMENT_SCREEN) {
+  } else if(move == EQUIPMENT_SCREEN) {
     d->display->displayInventory(EQUIPMENT_MODE);
     while(command(getch(), EQUIPMENT_MODE)) {}
     return 1;
-  }
-
-  else if(move == WEAR_SCREEN) {
+  } else if(move == WEAR_SCREEN) {
     d->display->displayInventory(WEAR_MODE);
     while(command(getch(), WEAR_MODE)) {}
     return 1;
-  }
-
-  else if(move == TAKEOFF_SCREEN) {
+  } else if(move == TAKEOFF_SCREEN) {
     d->display->displayInventory(TAKEOFF_MODE);
     while(command(getch(), TAKEOFF_MODE)) {}
     return 1;
-  }
-
-  else if(move == DROP_SCREEN) {
+  } else if(move == DROP_SCREEN) {
     d->display->displayInventory(DROP_MODE);
     while(command(getch(), DROP_MODE)) {}
     return 1;
-  }
-
-  else if(move == EXPUNGE_SCREEN) {
+  } else if(move == EXPUNGE_SCREEN) {
     d->display->displayInventory(EXPUNGE_MODE);
     while(command(getch(), EXPUNGE_MODE)) {}
     return 1;
-  }
-  
-  else if(move == INSPECT_SCREEN) {
+  } else if(move == INSPECT_SCREEN) {
     d->display->displayInventory(INSPECT_MODE);
     while(command(getch(), INSPECT_MODE)) {}
     return 1;
-  }
-
-  else if(move == STATS_SCREEN) {
+  } else if(move == STATS_SCREEN) {
     d->display->displayCharacterStats();
     while(statsCommand(getch())) {}
     return 1;
-  }
-
-  else if(move == RANGED_SCREEN) {
+  } else if(move == RANGED_SCREEN) {
     d->display->displayRangedAttack(RANGED_SELECT_MODE);
     while(rangedCommand(getch())) {}
     return 1;
   }
-
-  /*                 * 
+  /*                 *
    *                 *
    *      Moves      *
    *                 *
@@ -704,90 +637,60 @@ int pc::move(int move) {
   if((move == MV_UP_LEFT_1 || move == MV_UP_LEFT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = x - 1;
     next[dim_y] = y - 1;
-  }
-
-  else if(move == MV_UP_1 || move == MV_UP_2) {
+  } else if(move == MV_UP_1 || move == MV_UP_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = x;
       next[dim_y] = y - 1;
-    }
-
-    else {
+    } else {
       d->lcoords[dim_y] = (d->lcoords[dim_y] >= 19 ?
           d->lcoords[dim_y] - 10 : 9);
       return 1;
     }
-  }
-
-  else if((move == MV_UP_RIGHT_1 || move == MV_UP_RIGHT_2) && d->view_mode == CONTROL_MODE) {
+  } else if((move == MV_UP_RIGHT_1 || move == MV_UP_RIGHT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = x + 1;
     next[dim_y] = y - 1;
-  }
-
-  else if(move == MV_RIGHT_1 || move == MV_RIGHT_2) {
+  } else if(move == MV_RIGHT_1 || move == MV_RIGHT_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = x + 1;
       next[dim_y] = y;
-    }
-
-    else {
+    } else {
       d->lcoords[dim_x] = (d->lcoords[dim_x] <= 99 ?
           d->lcoords[dim_x] + 20: 119);
       return 1;
     }
-  }
-
-  else if((move == MV_DWN_RIGHT_1 || move == MV_DWN_RIGHT_2) && d->view_mode == CONTROL_MODE) {
+  } else if((move == MV_DWN_RIGHT_1 || move == MV_DWN_RIGHT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = x + 1;
     next[dim_y] = y + 1;
-  }
-
-  else if(move == MV_DWN_1 || move == MV_DWN_2) {
+  } else if(move == MV_DWN_1 || move == MV_DWN_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = x;
       next[dim_y] = y + 1;
-    }
-
-    else {
+    } else {
       d->lcoords[dim_y] = (d->lcoords[dim_y] <= 83 ?
           d->lcoords[dim_y] + 10: 93);
       return 1;
     }
-  }
-
-  else if((move == MV_DWN_LEFT_1 || move == MV_DWN_LEFT_2) && d->view_mode == CONTROL_MODE) {
+  } else if((move == MV_DWN_LEFT_1 || move == MV_DWN_LEFT_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = x - 1;
     next[dim_y] = y + 1;
-  }
-
-  else if(move == MV_LEFT_1 || move == MV_LEFT_2) {
+  } else if(move == MV_LEFT_1 || move == MV_LEFT_2) {
     if(d->view_mode == CONTROL_MODE) {
       next[dim_x] = x - 1;
       next[dim_y] = y;
-    }
-
-    else {
+    } else {
       d->lcoords[dim_x] = (d->lcoords[dim_x] >= 59 ?
           d->lcoords[dim_x] - 20: 39);
       return 1;
     }
-  }
-
-  else if((move == REST_1|| move == REST_2) && d->view_mode == CONTROL_MODE) {
+  } else if((move == REST_1|| move == REST_2) && d->view_mode == CONTROL_MODE) {
     next[dim_x] = x;
     next[dim_y] = y;
     return 0;
-  }
-
-  else if(move == MV_UP_STAIRS) {
+  } else if(move == MV_UP_STAIRS) {
     return mv_up_stairs(d);
-  }
-
-  else if(move == MV_DWN_STAIRS) {
+  } else if(move == MV_DWN_STAIRS) {
     return mv_dwn_stairs(d);
-  }
-
-  else if(move == LOOK_MODE) {
+  } else if(move == LOOK_MODE) {
     if(d->view_mode != LOOK_MODE) {
       d->view_mode = LOOK_MODE;
       if(d->lcoords[dim_y] < 9) d->lcoords[dim_y] = 9;
@@ -796,9 +699,7 @@ int pc::move(int move) {
       else if(d->lcoords[dim_x] < 39) d->lcoords[dim_x] = 39;
     }
     return 1;
-  }
-
-  else if(move == CONTROL_MODE) {
+  } else if(move == CONTROL_MODE) {
     if(d->view_mode != CONTROL_MODE) {
       d->view_mode = CONTROL_MODE;
       d->lcoords[dim_x] = x;
@@ -806,18 +707,14 @@ int pc::move(int move) {
       d->display->displayMap();
     }
     return 1;
-  }
-
-  else if(move == QUIT_GAME) {
+  } else if(move == QUIT_GAME) {
     return end_game(d, BOTH_MODE);
-  }
-
-  else {
+  } else {
     return 1;
   }
 
   if(hardnesspair(next) == 0) {
-    /* attackPos() will set next to current 
+    /* attackPos() will set next[] to current
      * position if it is occupied, so this works */
     attackPos();
     prev[dim_x] = x;
@@ -827,45 +724,39 @@ int pc::move(int move) {
     pickupItems();
     updateMap();
     return 0;
-  }
-
-  else {
+  } else {
     return 1;
   }
 }
 
 bool pc::getInventorySlot(int &s) {
-  /* Sets s to first open slot 
+  /* Sets s to first open slot
    * Returns true if slot was found -
    * false otherwise */
-
   int i;
-  
   for(i = 0; i < INVENTORY_SIZE; i++) {
     if(inventory[i] == nullptr) {
       s = i;
       return true;
     }
   }
-
   return false;
 }
 
 int pc::pickupItems() {
   int i = INT_MAX;
   item *t = d->item_grid[next[dim_y]][next[dim_x]];
+
   if(t != nullptr) {
     if(t->getType() == GOLD_TYPE) {
       d->disp_msg = "Picked up ";
       d->disp_msg.append(std::to_string(t->getValue()));
       d->disp_msg.append(" gold");
-
       d->item_grid[next[dim_y]][next[dim_x]] = nullptr;
       cash += t->getValue();
       delete t;
-    }
-    else if(getInventorySlot(i)) {
-      inventory[i] = t; 
+    } else if(getInventorySlot(i)) {
+      inventory[i] = t;
       d->item_grid[next[dim_y]][next[dim_x]] = nullptr;
       d->disp_msg = "Picked up ";
       d->disp_msg.append(inventory[i]->getName());
@@ -887,21 +778,18 @@ item *pc::equip(item *t) {
     if(equipment.ring_one == nullptr) {
       ret = nullptr;
       equipment.ring_one = t;
-    }
-    else if(equipment.ring_two == nullptr) {
+    } else if(equipment.ring_two == nullptr) {
       ret = nullptr;
       equipment.ring_two = t;
-    }
-    else { 
+    } else {
       ret = equipment.ring_one;
       equipment.ring_one = t;
     }
   }
-
   /* Food and water */
   else if(t->getType() == FOOD_TYPE) {
     if(hp == maxhp)
-      return t; 
+      return t;
     hp += t->getAttribute();
 
     d->disp_msg = "You gain ";
@@ -916,17 +804,15 @@ item *pc::equip(item *t) {
     t = nullptr;
     ret = nullptr;
     return ret;
-  }
-  else if(t->getType() == WATER_TYPE) {
+  } else if(t->getType() == WATER_TYPE) {
     if(mana == maxMana)
-      return t; 
-    mana += t->getAttribute();
+      return t;
 
+    mana += t->getAttribute();
     d->disp_msg = "You gain ";
     d->disp_msg.append(std::to_string(t->getAttribute()));
     d->disp_msg.append(" mana from ");
     d->disp_msg.append(t->getName());
-
 
     if(mana > maxMana)
       mana = maxMana;
@@ -936,7 +822,6 @@ item *pc::equip(item *t) {
     ret = nullptr;
     return ret;
   }
-
   /* Books and Scrolls */
   else if(t->getType() == BOOK_TYPE) {
     d->disp_msg = t->getName();
@@ -952,8 +837,7 @@ item *pc::equip(item *t) {
     t = nullptr;
     ret = nullptr;
     return ret;
-  }
-  else if(t->getType() == SCROLL_TYPE) {
+  } else if(t->getType() == SCROLL_TYPE) {
     d->disp_msg = t->getName();
     d->disp_msg.append(" grants you ");
     d->disp_msg.append(std::to_string(t->getAttribute()));
@@ -977,7 +861,6 @@ item *pc::equip(item *t) {
     ret = nullptr;
     return ret;
   }
-
   /* Flasks */
   else if(t->getType() == FLASK_TYPE) {
     if(t->getName() == "strangely colored flask") {
@@ -993,8 +876,7 @@ item *pc::equip(item *t) {
           d->disp_msg.append("-Everything goes dark...");
           end_game(d, NPC_MODE);
         }
-      } 
-      else {
+      } else {
         hp += t->getAttribute();
         maxhp += t->getAttribute();
         d->disp_msg = ("You gained ");
@@ -1005,8 +887,7 @@ item *pc::equip(item *t) {
         delete t;
         t = nullptr;
       }
-    }
-    else if(t->getName() == "Elixer of Accuracy") {
+    } else if(t->getName() == "Elixer of Accuracy") {
       d->disp_msg = ("Gained ");
       d->disp_msg.append(std::to_string(t->getAttribute()));
       d->disp_msg.append(" hit from ");
@@ -1015,8 +896,7 @@ item *pc::equip(item *t) {
       hit += t->getAttribute();
       delete t;
       t = nullptr;
-    }
-    else if(t->getName() == "Mysterious potion") {
+    } else if(t->getName() == "Mysterious potion") {
       d->disp_msg = ("Gained ");
       d->disp_msg.append(std::to_string(t->getAttribute()));
       d->disp_msg.append(" speed from ");
@@ -1027,45 +907,34 @@ item *pc::equip(item *t) {
       t = nullptr;
     }
     return ret;
-  }
-
-  else if(t->getType() == WEAPON_TYPE) {
+  } else if(t->getType() == WEAPON_TYPE) {
     ret = equipment.weapon;
     equipment.weapon = t;
-  }
-  else if(t->getType() == OFFHAND_TYPE) {
+  } else if(t->getType() == OFFHAND_TYPE) {
     ret = equipment.offhand;
     equipment.offhand = t;
-  }
-  else if(t->getType() == RANGED_TYPE) {
+  } else if(t->getType() == RANGED_TYPE) {
     ret = equipment.ranged;
     equipment.ranged = t;
-  }
-  else if(t->getType() == ARMOR_TYPE) {
+  } else if(t->getType() == ARMOR_TYPE) {
     ret = equipment.armor;
     equipment.armor = t;
-  }
-  else if(t->getType() == HELMET_TYPE) {
+  } else if(t->getType() == HELMET_TYPE) {
     ret = equipment.helmet;
     equipment.helmet = t;
-  }
-  else if(t->getType() == CLOAK_TYPE) {
+  } else if(t->getType() == CLOAK_TYPE) {
     ret = equipment.cloak;
     equipment.cloak = t;
-  }
-  else if(t->getType() == GLOVE_TYPE) {
+  } else if(t->getType() == GLOVE_TYPE) {
     ret = equipment.gloves;
     equipment.gloves = t;
-  }
-  else if(t->getType() == BOOT_TYPE) {
+  } else if(t->getType() == BOOT_TYPE) {
     ret = equipment.boots;
     equipment.boots = t;
-  }
-  else if(t->getType() == AMULET_TYPE) {
+  } else if(t->getType() == AMULET_TYPE) {
     ret = equipment.amulet;
     equipment.amulet = t;
-  }
-  else if(t->getType() == LIGHT_TYPE) {
+  } else if(t->getType() == LIGHT_TYPE) {
     ret = equipment.light;
     if(ret) {
       lightRadius -= ret->getAttribute();
@@ -1073,8 +942,7 @@ item *pc::equip(item *t) {
     equipment.light = t;
     lightRadius = equipment.light->getAttribute() + DEFAULT_LIGHT_RADIUS;
     updateMap();
-  }
-  else if(t->getType() == WAND_TYPE) {
+  } else if(t->getType() == WAND_TYPE) {
     ret = equipment.wand;
     if(ret) {
       mana -= ret->getAttribute();
@@ -1085,12 +953,10 @@ item *pc::equip(item *t) {
     mana += equipment.wand->getAttribute();
     maxMana += equipment.wand->getAttribute();
     intellect += t->getAttribute();
-  }
-  else if(t->getType() == AMMUNITION_TYPE) {
+  } else if(t->getType() == AMMUNITION_TYPE) {
     ret = equipment.ammunition;
     equipment.ammunition = t;
-  }
-  else {
+  } else {
     /* Invalid type */
     return t;
   }
@@ -1104,7 +970,6 @@ item *pc::equip(item *t) {
     dodge += t->getDodge();
     weight += t->getWeight();
   }
-
   if(ret) {
     hp -= ret->getDefense();
     maxhp -= ret->getDefense();
@@ -1117,46 +982,43 @@ item *pc::equip(item *t) {
   d->disp_msg = "Equiped ";
   d->disp_msg.append(t->getName());
 
-  /* return whatever was equipped */
+  // return whatever was taken off
   return ret;
-} 
+}
 
 void pc::clearInventories() {
-  /*__TODO__*/
   int i;
 
   for(i = 0; i < INVENTORY_SIZE; i++) {
     if(inventory[i] != nullptr) {
       delete inventory[i];
       inventory[i] = nullptr;
-    } 
+    }
   }
-
-  if(equipment.weapon != nullptr) 
-    delete equipment.weapon; 
-  if(equipment.offhand != nullptr) 
-    delete equipment.offhand; 
-  if(equipment.ranged != nullptr) 
-    delete equipment.ranged; 
-  if(equipment.armor != nullptr) 
-    delete equipment.armor; 
-  if(equipment.helmet != nullptr) 
-    delete equipment.helmet; 
-  if(equipment.cloak != nullptr) 
-    delete equipment.cloak; 
-  if(equipment.gloves != nullptr) 
-    delete equipment.gloves; 
-  if(equipment.boots != nullptr) 
-    delete equipment.boots; 
-  if(equipment.amulet != nullptr) 
-    delete equipment.amulet; 
-  if(equipment.light != nullptr) 
-    delete equipment.light; 
-  if(equipment.ring_one != nullptr) 
-    delete equipment.ring_one; 
-  if(equipment.ring_two != nullptr) 
-    delete equipment.ring_two; 
-
+  if(equipment.weapon != nullptr)
+    delete equipment.weapon;
+  if(equipment.offhand != nullptr)
+    delete equipment.offhand;
+  if(equipment.ranged != nullptr)
+    delete equipment.ranged;
+  if(equipment.armor != nullptr)
+    delete equipment.armor;
+  if(equipment.helmet != nullptr)
+    delete equipment.helmet;
+  if(equipment.cloak != nullptr)
+    delete equipment.cloak;
+  if(equipment.gloves != nullptr)
+    delete equipment.gloves;
+  if(equipment.boots != nullptr)
+    delete equipment.boots;
+  if(equipment.amulet != nullptr)
+    delete equipment.amulet;
+  if(equipment.light != nullptr)
+    delete equipment.light;
+  if(equipment.ring_one != nullptr)
+    delete equipment.ring_one;
+  if(equipment.ring_two != nullptr)
+    delete equipment.ring_two;
 }
 
 inline void pc::updateDesc() {
@@ -1168,7 +1030,7 @@ inline void pc::updateDesc() {
     description = "the archer";
   else if(currentClass == ROGUE)
     description = "the rogue";
-  else 
+  else
     description = "";
 }
 
@@ -1177,16 +1039,16 @@ void pc::updateMap() {
   for(j = y - lightRadius; j < (y + lightRadius + 1); j++) {
     for(i = x - lightRadius; i < (x + lightRadius + 1); i++) {
       if(j < DUNGEON_Y && j >= 0 && i < DUNGEON_X && i >= 0) {
-        pcmap[j][i] = mapxy(i, j); 
+        pcmap[j][i] = mapxy(i, j);
       }
     }
-  }  
+  }
 }
 
 void pc::initMap() {
   for(int j = 0; j < DUNGEON_Y; j++) {
     for(int i = 0; i < DUNGEON_X; i++) {
-      pcmap[j][i] = ter_wall; 
+      pcmap[j][i] = ter_wall;
     }
-  } 
+  }
 }

@@ -4,16 +4,14 @@
 mapMaker::mapMaker() {
   d = (_dungeon *) malloc(sizeof(*d));
   d->seed = time(NULL);
-  d->num_rooms = 0;
+  d->numrooms = 0;
   d->nummon = 0;
   d->numitems = 0;
   d->level = 1;
   d->nofog = false;
-  d->custom = true;
-
+  d->custom = false;
   d->rooms = (room_t *) malloc(sizeof(*d->rooms) * MAX_ROOMS);
-
-  init_dungeon(d, 0); 
+  init_dungeon(d, 0);
 }
 
 mapMaker::~mapMaker() {
@@ -22,8 +20,8 @@ mapMaker::~mapMaker() {
 }
 
 int mapMaker::addRoom(room_t r) {
-  d->rooms[d->num_rooms] = r;
-  d->num_rooms++; 
+  d->rooms[d->numrooms] = r;
+  d->numrooms++;
   return 0;
 }
 
@@ -47,9 +45,6 @@ int mapMaker::loadFromFile(string path) {
 }
 
 int mapMaker::printDungeon() {
-  print_to_term(d); 
+  print_to_term(d);
   return 0;
 }
-
-
-

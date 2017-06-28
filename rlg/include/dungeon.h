@@ -24,7 +24,7 @@
 
 #define DUNGEON_X   160
 #define DUNGEON_Y   105
-#define MIN_ROOMS   20 
+#define MIN_ROOMS   20
 #define MAX_ROOMS   30
 #define ROOM_MIN_X  7
 #define ROOM_MIN_Y  5
@@ -52,7 +52,6 @@
 
 using std::string;
 
-/* --from Dr Sheaffer-- */ 
 typedef struct corridor_path {
   heap_node_t *hn;
   uint8_t pos[2];
@@ -64,15 +63,18 @@ typedef struct room {
   uint8_t x, y, length, height;
 } room_t;
 
+/* Main dungeon object as C style struct
+ * Should be changed to class
+ */
 typedef struct dungeon {
   dungeon() : char_grid(), item_grid() {}
   bool nofog;
   bool custom;
+  int view_mode;
+  int numrooms, nummon, numitems;
+  long int seed;
   heap_t event_heap;
-  int16_t view_mode;
   pair_t lcoords;
-  int num_rooms, nummon, numitems;
-  long int seed; 
   room_t *rooms;
   terrain_t map[DUNGEON_Y][DUNGEON_X];
   character *char_grid[DUNGEON_Y][DUNGEON_X];
@@ -83,16 +85,17 @@ typedef struct dungeon {
   pc *player;
   string disp_msg;
   string level_msg;
+  string game_version;
   int level;
   abstractDisplay *display;
 } _dungeon;
 
-int dungeon_init(_dungeon *d);  
-int dungeon_init_load(_dungeon *d, const char *path);  
+int dungeon_init(_dungeon *d);
+int dungeon_init_load(_dungeon *d, const char *path);
 void printMonster(character *cp);
 void printItems(item *ip);
 void setupDisplay(_dungeon *d);
-uint8_t run_dungeon(_dungeon *d);
+int run_dungeon(_dungeon *d);
 void create_monsters(_dungeon *d, int num);
 void createItems(_dungeon *d, int num);
 int mv_up_stairs(_dungeon *d);

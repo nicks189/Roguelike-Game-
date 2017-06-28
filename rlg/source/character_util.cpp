@@ -1,18 +1,23 @@
+/* This file was used to allow C and C++ to be
+ * used together in the same program and can
+ * therefore be removed. It will need to be modified
+ * to be used again.
+ */
+
 #include "../include/character_util.h"
 #include "../include/character.h"
 #include "../include/npc.h"
 #include "../include/pc.h"
 
-#ifdef __cplusplus 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 void *pc_init(_dungeon *d, uint8_t loaded, int16_t *loc) {
   pc *p;
   if(loaded) {
-    p = new pc(d, loc); 
-  }
-  else {
+    p = new pc(d, loc);
+  } else {
     p = new pc(d);
   }
   return (void *) p;

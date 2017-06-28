@@ -1,3 +1,5 @@
+// This file is not currently used
+
 #ifndef SHOP_KEEPER_H
 #define SHOP_KEEPER_H
 
@@ -15,7 +17,7 @@ class shop_keeper : public character {
 
   public:
     item *inventory[SHOP_INVENTORY_SIZE];
-    int move() { return findRandNeighbor(); }  
+    int move() { return findRandNeighbor(); }
 };
 
 #endif

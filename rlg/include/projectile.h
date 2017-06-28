@@ -24,8 +24,8 @@ class projectile {
 
   public:
     projectile(_dungeon *dun, int x, int y) : projectile(dun, x, y, N, 1) {}
-    projectile(_dungeon *dun, int x, int y, int dir, int dam); 
-    projectile(_dungeon *dun, int x, int y, int dir, int dam, int col) 
+    projectile(_dungeon *dun, int x, int y, int dir, int dam);
+    projectile(_dungeon *dun, int x, int y, int dir, int dam, int col)
                                      : projectile(dun, x, y, dir, dam) {
       color = col;
     }
@@ -47,31 +47,9 @@ class projectile {
     void setDamage(int n) { damage = n; }
     void setSymbol(char c) { symbol = c; }
     void setDirection(int n) { direction = n; }
-    virtual void setEffect(effect *e) { eff = e; } 
+    virtual void setEffect(effect *e) { eff = e; }
     virtual effect *getEffect() { return eff; }
     virtual int move();
 };
-
-//class spell : public projectile {
-//  private:
-//    effect *eff;  
-//  public:
-//    spell(_dungeon *dun, int x, int y) : projectile(dun, x, y, N, 1) {}
-//    spell(_dungeon *dun, int x, int y, int dir, int dam) 
-//                                     : projectile(dun, x, y, dir, dam) {} 
-//    spell(_dungeon *dun, int x, int y, int dir, int dam, int col) 
-//                                     : projectile(dun, x, y, dir, dam) {
-//      color = col;
-//    }
-//    ~spell() {
-//      if(eff) {
-//        delete eff;
-//        eff = nullptr;
-//      }
-//    }
-//    effect *getEffect() { return eff; }
-//    void setEffect(effect *e) { eff = e; }
-//    int move();
-//};
 
 #endif

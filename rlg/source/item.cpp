@@ -5,20 +5,16 @@ item::item(_dungeon *dun) {
   d = dun;
   known = false;
   level = 0;
-  
+
   int tx, ty, tempRoom;
   do {
-
-    tempRoom = rand_range(0, d->num_rooms - 1); 
-
+    tempRoom = rand_range(0, d->numrooms - 1);
     tx = rand_range(d->rooms[tempRoom].x + 1,
          d->rooms[tempRoom].length - 2 + d->rooms[tempRoom].x);
 
-    ty = rand_range(d->rooms[tempRoom].y + 1, 
+    ty = rand_range(d->rooms[tempRoom].y + 1,
          d->rooms[tempRoom].height - 2 + d->rooms[tempRoom].y);
-
   } while(!isOpen(tx, ty));
-
   x = tx;
   y = ty;
 }
@@ -31,7 +27,7 @@ item::item(item &n) {
   type = n.type;
   color = n.color;
   hit = n.hit;
-  damage = new dice(); 
+  damage = new dice();
   damage->setBase(n.damage->getBase());
   damage->setNumber(n.damage->getNumber());
   damage->setSides(n.damage->getSides());
@@ -46,24 +42,20 @@ item::item(item &n) {
 
   int tx, ty, tempRoom;
   do {
-
-    tempRoom = rand_range(0, d->num_rooms - 1); 
-
+    tempRoom = rand_range(0, d->numrooms - 1);
     tx = rand_range(d->rooms[tempRoom].x + 1,
          d->rooms[tempRoom].length - 2 + d->rooms[tempRoom].x);
 
-    ty = rand_range(d->rooms[tempRoom].y + 1, 
+    ty = rand_range(d->rooms[tempRoom].y + 1,
          d->rooms[tempRoom].height - 2 + d->rooms[tempRoom].y);
-
   } while(!isOpen(tx, ty));
-  
+
   x = tx;
   y = ty;
 }
 
 string item::toString() {
   string ret;
-
   ret = name;
   ret.append(" - ");
 
@@ -99,16 +91,15 @@ string item::toString() {
     ret.append(" $");
     ret.append(std::to_string(value));
   }
-
   return ret;
 }
 
 int item::isOpen(int xt, int yt) {
-  if(mapxy(xt, yt) == ter_floor_room 
+  if(mapxy(xt, yt) == ter_floor_room
         && d->item_grid[yt][xt] == nullptr) {
     return 1;
   }
-  return 0;      
+  return 0;
 }
 
 void item::setSymbol(objectType t) {
@@ -150,6 +141,6 @@ void item::setSymbol(objectType t) {
       symbol = '-';
   else if(t == CONTAINER_TYPE)
     symbol = '%';
-  else 
+  else
     symbol = '*';
 }

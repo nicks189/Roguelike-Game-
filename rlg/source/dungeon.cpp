@@ -9,61 +9,63 @@
 using std::vector;
 using std::stringstream;
 
-int dungeon_init(_dungeon *d) { 
+int dungeon_init(_dungeon *d) {
   static int initialized = 0;
   srand(d->seed);
 
-  if(d->level == 2) {
+  if(!initialized) {
+    int cmd;
+    setupDisplay(d);
+    /* Add (2) loading and (3) options
+     * --
+     * Using ASCII macros defined in include/pc.h
+     */
+    do {
+      cmd = d->display->displayMenu();
+    } while (cmd != SLOT1 && cmd != SLOT4);
+    if(cmd == SLOT4)
+      end_game(d, BOTH_MODE);
+  }
+
+  // Check for boss levels
+  if(d->level == 6) {
     string path = getenv("HOME");
     path.append("/.rlg327/boss01.rlg327");
     return dungeon_init_load(d, path.c_str());
   }
 
-  d->num_rooms = rand_range(MIN_ROOMS, MAX_ROOMS);
-  d->rooms = (room_t *) malloc(sizeof(*d->rooms) * d->num_rooms);
-
+  d->numrooms = rand_range(MIN_ROOMS, MAX_ROOMS);
+  d->rooms = (room_t *) malloc(sizeof(*d->rooms) * d->numrooms);
   init_dungeon(d, 0);
-
   make_rooms(d);
   fill_rooms(d);
 
   if(!initialized) {
     d->player = new pc(d);
-    setupDisplay(d);
     initialized = 1;
-  }
-
-  else {
-    d->player->place(d);  
+  } else {
+    d->player->place(d);
   }
 
   heap_insert(&d->event_heap, init_pc_event(d->player));
-
   connect_rooms(d);
   place_stairs(d);
-
   pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
   pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
-
   create_monsters(d, d->nummon > 0 ? d->nummon : 20);
   createItems(d, d->numitems > 0 ? d->numitems : 20);
-
-  d->player->updateMap(); 
+  d->player->updateMap();
 
   if(d->level < 6) {
     d->level_msg = "It's very dark... you wonder how you got here.";
-  }
-  else if(d->level < 10) {
-    d->level_msg = "You begin to shiver from the cold."; 
-  }
-  else if(d->level < 15) {
+  } else if(d->level < 10) {
+    d->level_msg = "You begin to shiver from the cold.";
+  } else if(d->level < 15) {
     d->level_msg = "You hear a strange noise...";
   }
 
   d->disp_msg = d->level_msg;
-
   d->display->displayMap();
-
   return 0;
 }
 
@@ -71,48 +73,41 @@ int dungeon_init_load(_dungeon *d, const char *path) {
   init_dungeon(d, 0);
 
   d->rooms = (room_t *) malloc(sizeof(*d->rooms) * MAX_ROOMS);
-
   if(read_from_file(d, path)) {
     return 1;
   }
 
-  if(d->level == 2) {
+  /* Boss level settings
+   * More needs to be added yet like choosing specific monsters
+   */
+  if(d->level == 6) {
     d->level_msg = "You hear a strange noise...";
     d->nummon = 5;
     d->numitems = 8;
-  }
-  //else if(d->level < 6) {
-  //  d->level_msg = "You begin to shiver from the cold."; 
-  //}
-  else {
+  } else {
     d->level_msg = "It's very dark... you wonder how you got here.";
   }
-  
+
   fill_rooms(d);
   load_dungeon(d);
   place_stairs(d);
-
-  d->player->place(d);  
+  d->player->place(d);
   heap_insert(&d->event_heap, init_pc_event(d->player));
-
   pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
   pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
 
   create_monsters(d, d->nummon > 0 ? d->nummon : 20);
   createItems(d, d->numitems > 0 ? d->numitems : 20);
-
-  d->player->updateMap(); 
-
+  d->player->updateMap();
   d->disp_msg = d->level_msg;
-
   d->display->displayMap();
-
   return 0;
 }
 
-/* refreshes dungeon and moves characters until 
- * the game ends or user quits */
-uint8_t run_dungeon(_dungeon *d) {
+/* Refreshes dungeon and moves characters until
+ * the game ends or user quits
+ */
+int run_dungeon(_dungeon *d) {
   event_t *cur_node, *peek_node, *temp_node;
 
   while(true) {
@@ -120,22 +115,19 @@ uint8_t run_dungeon(_dungeon *d) {
     d->lcoords[dim_y] = d->player->getY();
     if(d->event_heap.size != 1) {
       cur_node = (event_t *) heap_remove_min(&d->event_heap);
-    }
-
-    else {
+    } else {
       d->display->displayMap();
       heap_delete(&d->event_heap);
       return end_game(d, PC_MODE);
     }
 
     while((peek_node = (event_t *) heap_peek_min(&d->event_heap))) {
-      if(peek_node->time == cur_node->time 
+      if(peek_node->time == cur_node->time
                          && peek_node->sequence < cur_node->sequence) {
         temp_node = (event_t *) heap_remove_min(&d->event_heap);
         heap_insert(&d->event_heap, cur_node);
         cur_node = temp_node;
-      }
-      else {
+      } else {
         break;
       }
     }
@@ -144,16 +136,14 @@ uint8_t run_dungeon(_dungeon *d) {
       d->display->displayMap();
       cur_node->time += (1000 / cur_node->c->getSpeed());
 
-      /* __TODO - Make getting command independant__ */
+      // Make getting command independant
       while(d->player->move(getch())) {
         d->display->displayMap();
       }
       pathfinding(d, d->player->getX(), d->player->getY(), TUNNEL_MODE);
       pathfinding(d, d->player->getX(), d->player->getY(), NON_TUNNEL_MODE);
       heap_insert(&d->event_heap, cur_node);
-    }
-
-    else {
+    } else {
       if(!(cur_node->c->isDead())) {
         cur_node->time += (1000 / cur_node->c->getSpeed());
         if(cur_node->c->move()) {
@@ -161,8 +151,7 @@ uint8_t run_dungeon(_dungeon *d) {
           return end_game(d, NPC_MODE);
         }
         heap_insert(&d->event_heap, cur_node);
-      }
-      else {
+      } else {
         delete_event(cur_node);
       }
     }
@@ -195,9 +184,7 @@ void create_monsters(_dungeon *d, int num) {
   // }
 
   int i = 0;
-
   vector<character *> v;
-
   character *cp;
   characterFactory *factory = new characterFactory(d);
 
@@ -206,12 +193,10 @@ void create_monsters(_dungeon *d, int num) {
     v.push_back(cp);
   }
 
-  while(i < num) { 
+  while(i < num) {
     npc *n = (npc *) v[rand_range(0, v.size() - 1)];
-
     if(d->level > n->getLevel()) {
-      cp = new npc(*n); 
-
+      cp = new npc(*n);
       char_gridxy(cp->getX(), cp->getY()) = cp;
       heap_insert(&d->event_heap, init_npc_event(cp, i));
       i++;
@@ -223,7 +208,6 @@ void create_monsters(_dungeon *d, int num) {
     delete cp;
     v.pop_back();
   }
-
   delete factory;
 }
 
@@ -244,11 +228,9 @@ void createItems(_dungeon *d, int num) {
   // if(d->numitems == 0) {
   //   d->numitems = 20;
   // }
-  
+
   int i = 0;
-
   vector<item *> v;
-
   item *ip;
   itemFactory *factory = new itemFactory(d);
 
@@ -257,10 +239,10 @@ void createItems(_dungeon *d, int num) {
     v.push_back(ip);
   }
 
-  while(i < num) { 
+  while(i < num) {
     item *n = v[rand_range(0, v.size() - 1)];
     if(d->level > n->getLevel()) {
-      ip = new item(*n); 
+      ip = new item(*n);
       d->item_grid[ip->getY()][ip->getX()] = ip;
       i++;
     }
@@ -271,7 +253,6 @@ void createItems(_dungeon *d, int num) {
     delete ip;
     v.pop_back();
   }
-
   delete factory;
 }
 
@@ -476,7 +457,7 @@ void empty_dungeon(_dungeon *d) {
 int in_room(_dungeon *d, int16_t y, int16_t x)
 {
   int i;
-  for (i = 0; i < d->num_rooms; i++) {
+  for (i = 0; i < d->numrooms; i++) {
     if ((x >= d->rooms[i].x) &&
         (x < (d->rooms[i].y + d->rooms[i].length)) &&
         (y >= d->rooms[i].y) &&
@@ -488,10 +469,10 @@ int in_room(_dungeon *d, int16_t y, int16_t x)
 }
 
 void make_rooms(_dungeon *d) {
-  int32_t i;
+  int i;
 
-  for(i = 0; i < d->num_rooms; i++) {
-    while(1) {
+  for(i = 0; i < d->numrooms; i++) {
+    while(true) {
       uint8_t bool_tmp = 1;
       room_t r = {rand_range(1, DUNGEON_X - 9), rand_range(1, DUNGEON_Y - 7),
            rand_range(ROOM_MIN_X, ROOM_MAX_X), rand_range(ROOM_MIN_Y, ROOM_MAX_Y)};
@@ -523,7 +504,7 @@ void make_rooms(_dungeon *d) {
         d->rooms[i] = r;
         break;
       }
-    } 
+    }
   }
 }
 
@@ -531,7 +512,7 @@ void fill_rooms(_dungeon *d) {
   int32_t i;
   int x, y;
 
-  for(i = 0; i < d->num_rooms; i++) {
+  for(i = 0; i < d->numrooms; i++) {
     uint8_t y1 = d->rooms[i].y;
     uint8_t x1 = d->rooms[i].x;
     uint8_t y2 = d->rooms[i].y + d->rooms[i].height;
@@ -570,8 +551,8 @@ int create_cycle(_dungeon *d)
   pair_t e1, e2;
   p = q = 0;
 
-  for (i = max = 0; i < d->num_rooms - 1; i++) {
-    for (j = i + 1; j < d->num_rooms; j++) {
+  for (i = max = 0; i < d->numrooms - 1; i++) {
+    for (j = i + 1; j < d->numrooms; j++) {
       tmp = (((d->rooms[i].x - d->rooms[j].x)  *
               (d->rooms[i].x - d->rooms[j].x)) +
              ((d->rooms[i].y - d->rooms[j].y)  *
@@ -604,7 +585,7 @@ int create_cycle(_dungeon *d)
 
 void connect_rooms(_dungeon *d) {
   int32_t i;
-  for(i = 0; i < d->num_rooms - 1; i++) {
+  for(i = 0; i < d->numrooms - 1; i++) {
     pair_t e1, e2;
 
     e1[dim_x] = rand_range(d->rooms[i].x, d->rooms[i].length - 1 + d->rooms[i].x);
@@ -636,23 +617,20 @@ int place_stairs(_dungeon *d) {
     mapxy(xu1, yu1) = ter_stairs_down;
     mapxy(xu2, yu2) = ter_stairs_up;
     mapxy(xu3, yu3) = ter_stairs_up;
-  }
-  else {
+  } else {
     mapxy(xd1, yd1) = ter_stairs_down;
     mapxy(xd2, yd2) = ter_stairs_down;
     mapxy(xu1, yu1) = ter_stairs_down;
     mapxy(xu2, yu2) = ter_stairs_down;
     mapxy(xu3, yu3) = ter_stairs_down;
   }
-
   return 0;
 }
 
-inline uint8_t in_los_range(_dungeon *d, int x, int y) {
+inline int in_los_range(_dungeon *d, int x, int y) {
   if(d->nofog) {
     return 1;
-  }
-  else if(abs(x - d->player->getX()) <= 5 && 
+  } else if(abs(x - d->player->getX()) <= 5 &&
           (abs(y - d->player->getY()) <= 5)) {
     return 1;
   }
@@ -668,7 +646,7 @@ void load_dungeon(_dungeon *d) {
       if(hardnessxy(x, y) == 0) {
         if(mapxy(x, y) == ter_floor_room);
         else mapxy(x, y) = ter_floor_hall;
-      } 
+      }
       else if(mapxy(x, y) == ter_border_south);
       else if(mapxy(x, y) == ter_border_north);
       else if(mapxy(x, y) == ter_border_west);
@@ -681,7 +659,7 @@ void load_dungeon(_dungeon *d) {
 }
 
 int read_from_file(_dungeon *d, const char *path) {
-  d->num_rooms = 0;
+  d->numrooms = 0;
   FILE *fp;
 
   if(!(fp = fopen(path, "rb"))) {
@@ -692,7 +670,6 @@ int read_from_file(_dungeon *d, const char *path) {
   uint8_t f_marker[12];
   uint32_t f_version;
   uint32_t f_size;
-
 
   if(!fread(f_marker, sizeof(f_marker), 1, fp)) return 1;;
   if(!fread(&f_version, sizeof(int), 1, fp)) return 1;
@@ -706,19 +683,19 @@ int read_from_file(_dungeon *d, const char *path) {
     f_version = be32toh(f_version);
   }
 
-  /* reads 4 bytes at a time into rooms_temp, then is stored in d->rooms */
+  // reads 4 bytes at a time into rooms_temp, then is stored in d->rooms
   uint8_t rooms_temp[4];
   uint32_t index = 0;
   while(fread(rooms_temp, sizeof(rooms_temp), 1, fp) == 1) {
-    if(d->num_rooms >= MAX_ROOMS) {
-      d->rooms = (room_t *) realloc(d->rooms, sizeof(d->rooms) * d->num_rooms);
+    if(d->numrooms >= MAX_ROOMS) {
+      d->rooms = (room_t *) realloc(d->rooms, sizeof(d->rooms) * d->numrooms);
     }
     d->rooms[index].x = rooms_temp[0];
     d->rooms[index].y = rooms_temp[1];
     d->rooms[index].length = rooms_temp[2];
     d->rooms[index].height = rooms_temp[3];
     index++;
-    d->num_rooms++;
+    d->numrooms++;
   }
 
   fclose(fp);
@@ -732,7 +709,7 @@ void save_to_file(_dungeon *d, const char* path) {
   fp = fopen(path, "wb");
   unsigned char f_marker[12] = {'R','L','G','3','2','7','-','S','2','0','1','7'};
   uint32_t f_version = 0;
-  uint32_t f_size = 12 + 4 + 4 + 160 * 105 + 4 * d->num_rooms;
+  uint32_t f_size = 12 + 4 + 4 + 160 * 105 + 4 * d->numrooms;
   int32_t i;
 
   /* check endianess */
@@ -747,7 +724,7 @@ void save_to_file(_dungeon *d, const char* path) {
   fwrite(&f_size, sizeof(int32_t), 1, fp);
   fwrite(d->hardness, sizeof(uint8_t), 160 * 105, fp);
 
-  for(i = 0; i < d->num_rooms; i++) {
+  for(i = 0; i < d->numrooms; i++) {
     uint8_t to_mem[4];
     to_mem[0] = d->rooms[i].x;
     to_mem[1] = d->rooms[i].y;
@@ -763,13 +740,12 @@ void save_to_file(_dungeon *d, const char* path) {
 void delete_dungeon(_dungeon *d) {
   int i, j;
 
-  for(i = 0; i < d->num_rooms; i++) {
+  for(i = 0; i < d->numrooms; i++) {
     d->rooms[i].x = 0;
     d->rooms[i].y = 0;
     d->rooms[i].length = 0;
     d->rooms[i].height = 0;
   }
-
   for(j = 0; j < DUNGEON_Y; j++) {
     for(i = 0; i < DUNGEON_X; i++) {
       if(d->item_grid[j][i] != nullptr) {
@@ -778,7 +754,6 @@ void delete_dungeon(_dungeon *d) {
       }
     }
   }
-   
   for(j = 0; j < DUNGEON_Y; j++) {
     for(i = 0; i < DUNGEON_X; i++) {
       if(d->char_grid[j][i] != nullptr) {
@@ -786,9 +761,7 @@ void delete_dungeon(_dungeon *d) {
       }
     }
   }
-
   heap_delete(&d->event_heap);
-
   free(d->rooms);
   d->rooms = nullptr;
 }
@@ -811,13 +784,12 @@ void init_dungeon(_dungeon *d, uint8_t load) {
 int end_game(_dungeon *d, int mode) {
   d->display->endGameScreen(mode);
   delete_dungeon(d);
-
-  delete d->player;
-  d->player = nullptr;
-
+  if(d->player) {
+    delete d->player;
+    d->player = nullptr;
+  }
   delete d->display;
   d->display = nullptr;
-
   exit(0);
   return 1;
 }
@@ -860,10 +832,10 @@ void print_to_term(_dungeon *d) {
           case ter_stairs_up:
             putchar('<');
             break;
-          case endgame_flag:
+          case endgame_flag: // endgame_flag can probably be removed
             putchar('X');
             break;
-        } 
+        }
       }
     }
     putchar('\n');

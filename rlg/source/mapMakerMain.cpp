@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   r.length = 10;
   r.height = 10;
 
-  room_t r1; 
+  room_t r1;
   r1.x = 80;
   r1.y = 10;
   r1.length = 10;
@@ -38,11 +38,11 @@ int main(int argc, char **argv) {
   mm.addRoom(r3);
 
   mm.completeDungeon();
-  mm.saveToFile("/home/nick/.rlg327/boss01.rlg327");
 
-  //mm.loadFromFile("/home/nick/.rlg327/boss01.rlg327");
+  string path = getenv("HOME");
+  path.append("/.rlg327/boss01.rlg327");
+  mm.saveToFile(path);
   
   mm.printDungeon();
-
-  return 0; 
+  return 0;
 }
