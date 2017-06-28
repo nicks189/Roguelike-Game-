@@ -1,5 +1,7 @@
 ########## README ##########
 
+Created for Computer Science 327 at Iowa State University
+
 READ BEFORE ATTEMPTING TO BUILD --
  - Ncurses is required to compile (check in /usr/include/). If you don't have
    it, search online for an installation guide for your distribution
@@ -9,22 +11,22 @@ READ BEFORE ATTEMPTING TO BUILD --
    this command: mv source/temp ~/.rlg327
 
 Runnning arguments --
- --nummon <number> or -m <number> to change the number of monsters loaded
- --items <number> or -i <number> to change the number of items loaded
- --nofog or -g to disable fog of war
- --rand <seed> or -r <seed> to select seed
+ - --nummon <number> or -m <number> to change the number of monsters loaded
+ - --items <number> or -i <number> to change the number of items loaded
+ - --nofog or -g to disable fog of war
+ - --rand <seed> or -r <seed> to select seed
 
 Controls --
- w - wear/consume screen
- t - takeoff equipment screen
- x - expunge item screen
- d - drop item screen
- i - inventory screen
- I - inspection screen
- c - display character screen
- r - ranged combat screen (prompts for direction to attack)
- L - look view
- esc - exit to default view
+ - w - wear/consume screen
+ - t - takeoff equipment screen
+ - x - expunge item screen
+ - d - drop item screen
+ - i - inventory screen
+ - I - inspection screen
+ - c - display character screen
+ - r - ranged combat screen (prompts for direction to attack)
+ - L - look view
+ - esc - exit to default view
 
 Current features --
  - Working hit, dodge, speed, and defense stats. (Details below)
