@@ -4,18 +4,15 @@ READ BEFORE ATTEMPTING TO BUILD --
  - Ncurses is required to compile (check in /usr/include/). If you don't have 
    it, search online for an installation guide for your distribution
  - Move the temp folder (found in source/) into your home directory and name
-   it .rlg327 so that the path to it is ~/.rlg327/
+   it .rlg327 so that the path to it is ~/.rlg327/ -- Alternatively, just run
+   this command: mv source/temp ~/.rlg327
 
 Runnning arguments --
- --nummon or -m to change the number of monsters loaded
- --items or -i to change the number of items loaded
+ --nummon <number> or -m <number> to change the number of monsters loaded
+ --items <number> or -i <number> to change the number of items loaded
  --nofog or -g to disable fog of war
  --rand <seed> or -r <seed> to select seed
- --default to load monsters/items from ~/.rlg327/ file. Also disables 
-   monster/item levels. (Without this switch the monster/items are loaded from 
-   the files in the current directory - these files are full of additional 
-   monsters and items)
-
+ 
 Controls --
  w - wear/consume screen 
  t - takeoff equipment screen
