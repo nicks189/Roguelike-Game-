@@ -1,0 +1,9 @@
+######## ISSUES ########
+
+- Performance -- run with profiling 
+    1) Optimize pathfinding
+- Issues with ranged combat:
+    1) Casting spell/firing arrow doesn't consume turn
+    2) Cancelling ranged combat consumes turn
+- Effects rendering through walls
+- NPC logic should be improved and move function refactored
