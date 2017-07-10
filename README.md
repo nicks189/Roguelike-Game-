@@ -1,6 +1,6 @@
 ########## README ##########
 
-Created for Computer Science 327 at Iowa State University
+Created for Computer Science course at Iowa State University
 
 READ BEFORE ATTEMPTING TO BUILD --
  - Ncurses is required to compile (check in /usr/include/). If you don't have

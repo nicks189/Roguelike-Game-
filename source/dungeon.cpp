@@ -192,7 +192,6 @@ void create_monsters(_dungeon *d, int num) {
   while((cp = (character *) factory->generateNext())) {
     v.push_back(cp);
   }
-
   while(i < num) {
     npc *n = (npc *) v[rand_range(0, v.size() - 1)];
     if(d->level > n->getLevel()) {
@@ -202,7 +201,6 @@ void create_monsters(_dungeon *d, int num) {
       i++;
     }
   }
-
   while(v.size() != 0) {
     cp = v.back();
     delete cp;
@@ -238,7 +236,6 @@ void createItems(_dungeon *d, int num) {
   while((ip = (item *) factory->generateNext())) {
     v.push_back(ip);
   }
-
   while(i < num) {
     item *n = v[rand_range(0, v.size() - 1)];
     if(d->level > n->getLevel()) {
@@ -247,7 +244,6 @@ void createItems(_dungeon *d, int num) {
       i++;
     }
   }
-
   while(v.size() != 0) {
     ip = v.back();
     delete ip;
