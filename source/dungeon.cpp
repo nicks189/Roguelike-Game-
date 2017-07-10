@@ -145,6 +145,8 @@ int run_dungeon(_dungeon *d) {
       heap_insert(&d->event_heap, cur_node);
     } else {
       if(!(cur_node->c->isDead())) {
+        // Confusing method of picking which monsters turn it is
+        // Add clarification
         cur_node->time += (1000 / cur_node->c->getSpeed());
         if(cur_node->c->move()) {
           heap_delete(&d->event_heap);
