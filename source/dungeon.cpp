@@ -136,7 +136,7 @@ int run_dungeon(_dungeon *d) {
       d->display->displayMap();
       cur_node->time += (1000 / cur_node->c->getSpeed());
 
-      // Make getting command independant
+      // __TODO__ Make getting command independant
       while(d->player->move(getch())) {
         d->display->displayMap();
       }
