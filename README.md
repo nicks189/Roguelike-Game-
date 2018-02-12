@@ -57,3 +57,6 @@ Additional details --
    be learned by picking up and consuming a Scroll of Fire or a Scroll of
    Wisdom, respectively.
  - As an aside, don't expect much in the way of balance.
+
+Known bugs --
+- Player turn is wasted when cancelling spell
