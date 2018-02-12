@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
   d.game_version = "v2.00.2";
   d.custom = false; /* Currently not using d.custom */
 
-  /* Add args validation here */
+  /* Need to add args validation again */
 
 
   for(i = 1; i < argc; i++) {
